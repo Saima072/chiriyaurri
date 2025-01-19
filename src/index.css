@@ -1,0 +1,68 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: auto;
+  padding: 0;
+  text-align: center;
+  background-color: #f0f0f0;
+}
+
+.App {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+div {
+  margin-top: 10px;
+}
+
+button {
+  margin: 10px;
+  padding: 10px 20px;
+  font-size: 16px;
+  border: 2px solid #3498db;
+  background-color: #3498db;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-radius: 5px;
+}
+
+button:hover {
+  background-color: #2980b9;
+  transform: scale(1.1);
+}
+
+button:active {
+  transform: scale(1);
+}
+
+/* styles.css */
+body {
+  background-color: white;
+  margin: 0;
+  overflow: hidden;
+}
+
+.flying-object {
+  position: absolute;
+  width: 50px;
+  height: 50px;
+  background-color: #3498db;
+  border-radius: 50%;
+  animation: fly 10s linear infinite;
+}
+
+@keyframes fly {
+  0% {
+    transform: translateX(0) translateY(0);
+    opacity: 0.5;
+  }
+  100% {
+    transform: translateX(100vw) translateY(100vh);
+    opacity: 0;
+  }
+}
