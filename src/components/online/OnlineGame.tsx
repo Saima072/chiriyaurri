@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import CountdownBar from '../CountdownBar';
 import FlyStayButtons from '../FlyStayButtons';
+import PauseCard from '../PauseCard';
 import PromptCard from '../PromptCard';
 import Scoreboard from './Scoreboard';
 import { HostSession } from '../../multiplayer/host';
@@ -306,20 +307,45 @@ const OnlineGame: React.FC<{ onExit: () => void }> = ({ onExit }) => {
         <span>
           Round {round.index + 1}/{round.total}
         </span>
+        {hostSession && !view.paused && (
+          <button className="pause-btn" onClick={() => hostSession.pause()}>
+            ⏸ Pause
+          </button>
+        )}
         <span>Room {lobby.code}</span>
       </div>
       {view.phase === 'question' && (
         <CountdownBar
           durationMs={round.durationMs}
           resetKey={round.index}
-          paused={view.answered}
+          paused={view.answered || view.paused}
         />
       )}
-      <PromptCard prompt={round.prompt} outcome={selfOutcome} />
-      {view.phase === 'question' && view.answered ? (
+      {view.paused ? (
+        <PauseCard message={hostSession ? undefined : 'The host has paused the game.'}>
+          {hostSession ? (
+            <>
+              <button className="primary" onClick={() => hostSession.resume()}>
+                ▶ Resume
+              </button>
+              <button onClick={() => hostSession.endGame()}>End game</button>
+            </>
+          ) : (
+            <button className="link" onClick={leave}>
+              Leave room
+            </button>
+          )}
+        </PauseCard>
+      ) : (
+        <PromptCard prompt={round.prompt} outcome={selfOutcome} />
+      )}
+      {view.phase === 'question' && view.answered && !view.paused ? (
         <p className="waiting-note">Answer locked in — waiting for the others…</p>
       ) : (
-        <FlyStayButtons onAction={sendAnswer} disabled={view.phase !== 'question'} />
+        <FlyStayButtons
+          onAction={sendAnswer}
+          disabled={view.phase !== 'question' || view.paused}
+        />
       )}
       <Scoreboard
         lobby={lobby}
@@ -327,6 +353,11 @@ const OnlineGame: React.FC<{ onExit: () => void }> = ({ onExit }) => {
         selfId={view.selfId}
         result={view.phase === 'reveal' ? view.result : undefined}
       />
+      {!view.isHost && (
+        <button className="link" onClick={leave}>
+          Leave game
+        </button>
+      )}
     </div>
   );
 };

@@ -40,6 +40,7 @@ export class ClientSession {
       lobby: null,
       scores: {},
       answered: false,
+      paused: false,
     };
     this.onView(this.view);
     this.dial();
@@ -127,6 +128,7 @@ export class ClientSession {
           result: msg.result,
           scores: msg.scores,
           answered: msg.answered,
+          paused: msg.paused ?? false,
         });
         break;
       }
@@ -145,13 +147,20 @@ export class ClientSession {
           },
           result: undefined,
           answered: false,
+          paused: false,
         });
         break;
       case 'result':
         this.emit({ phase: 'reveal', result: msg.result, scores: msg.scores });
         break;
       case 'gameover':
-        this.emit({ phase: 'over', scores: msg.scores });
+        this.emit({ phase: 'over', scores: msg.scores, paused: false });
+        break;
+      case 'pause':
+        this.emit({ paused: true });
+        break;
+      case 'resume':
+        this.emit({ paused: false });
         break;
       case 'rejected':
         this.emit({ phase: 'error', error: msg.reason });
@@ -160,7 +169,7 @@ export class ClientSession {
   }
 
   answer(action: Action) {
-    if (this.view.phase !== 'question' || this.view.answered) return;
+    if (this.view.phase !== 'question' || this.view.answered || this.view.paused) return;
     this.send({ type: 'answer', index: this.currentRound, action });
     this.emit({ answered: true });
   }

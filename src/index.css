@@ -309,6 +309,29 @@ input:focus {
   background: #5f4e3f;
 }
 
+.pause-btn {
+  padding: 4px 12px;
+  font-size: 0.85rem;
+  background: #7a8ea0;
+  border-color: #7a8ea0;
+}
+
+.pause-btn:hover:not(:disabled) {
+  background: #62778a;
+}
+
+.prompt-card.paused {
+  border-style: dashed;
+}
+
+.pause-actions {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 0.4rem;
+}
+
 .waiting-note {
   color: #6d8aa3;
   font-style: italic;

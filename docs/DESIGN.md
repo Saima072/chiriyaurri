@@ -118,6 +118,18 @@ reveal never double-counts, and a reload mid-question replays the
 uncounted round. Guests ride their normal reconnect loops back into the
 revived room (their retry budget is sized to outlast a host reload).
 
+**Pausing and stopping.** Solo and team games have a Pause button that
+freezes the round clock *with its remaining time* — pausing never grants a
+fresh timer — and hides the prompt while paused, so it can't be used to buy
+thinking time. The pause card offers Resume and Quit (back to setup).
+Online, pausing is the host's power: the host's armed timer (question or
+between-rounds) is frozen and re-armed with the remaining time on resume,
+`pause`/`resume` broadcasts freeze every client's UI and answer buttons,
+answers arriving while paused are ignored, and rejoin `sync` carries the
+paused state. The host's pause card also offers **End game**, which makes
+the current scores final for everyone; guests get **Leave room/game**
+buttons instead.
+
 ## Verification
 
 Playwright smoke tests (kept out of the repo; run against `vite preview`)

@@ -1,13 +1,25 @@
 import React, { useState } from 'react';
 import CountdownBar from './CountdownBar';
 import FlyStayButtons from './FlyStayButtons';
+import PauseCard from './PauseCard';
 import PromptCard from './PromptCard';
 import { useRoundRunner } from '../game/useRoundRunner';
 import { bestStreak, totalPoints, ROUND_OPTIONS } from '../game/engine';
 
 const SoloRun: React.FC<{ rounds: number; onDone: () => void }> = ({ rounds, onDone }) => {
-  const { total, round, entry, durationMs, phase, outcomes, lastOutcome, answer } =
-    useRoundRunner(rounds);
+  const {
+    total,
+    round,
+    entry,
+    durationMs,
+    phase,
+    paused,
+    pause,
+    resume,
+    outcomes,
+    lastOutcome,
+    answer,
+  } = useRoundRunner(rounds);
 
   if (phase === 'over') {
     const score = totalPoints(outcomes);
@@ -30,11 +42,27 @@ const SoloRun: React.FC<{ rounds: number; onDone: () => void }> = ({ rounds, onD
         <span>
           Round {round + 1}/{total}
         </span>
+        {!paused && (
+          <button className="pause-btn" onClick={pause}>
+            ⏸ Pause
+          </button>
+        )}
         <span>Score: {totalPoints(outcomes)}</span>
       </div>
-      {phase === 'playing' && <CountdownBar durationMs={durationMs} resetKey={round} />}
-      <PromptCard prompt={entry.prompt} outcome={phase === 'reveal' ? lastOutcome : null} />
-      <FlyStayButtons onAction={answer} disabled={phase !== 'playing'} />
+      {phase === 'playing' && (
+        <CountdownBar durationMs={durationMs} resetKey={round} paused={paused} />
+      )}
+      {paused ? (
+        <PauseCard>
+          <button className="primary" onClick={resume}>
+            ▶ Resume
+          </button>
+          <button onClick={onDone}>Quit</button>
+        </PauseCard>
+      ) : (
+        <PromptCard prompt={entry.prompt} outcome={phase === 'reveal' ? lastOutcome : null} />
+      )}
+      <FlyStayButtons onAction={answer} disabled={phase !== 'playing' || paused} />
     </div>
   );
 };

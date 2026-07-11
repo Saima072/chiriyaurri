@@ -54,13 +54,20 @@ export class HostSession {
   private scores: Record<string, number> = {};
   private view: RoomView;
   private timer: number | undefined;
+  // The armed timer is pausable: kind + callback + deadline let resume()
+  // re-arm exactly what was interrupted, with only the remaining time.
+  private timerKind: 'question' | 'advance' | null = null;
+  private timerFn: (() => void) | null = null;
+  private timerDeadline = 0;
+  private paused = false;
+  private pausedRemaining = 0;
   private codeRetries = 0;
   private destroyed = false;
 
   constructor(
     private hostName: string,
     private onView: (view: RoomView) => void,
-    private resume?: HostSnapshot
+    private revival?: HostSnapshot
   ) {
     this.view = {
       phase: 'connecting',
@@ -69,21 +76,33 @@ export class HostSession {
       lobby: null,
       scores: {},
       answered: false,
+      paused: false,
     };
     this.openPeer();
   }
 
+  private armTimer(kind: 'question' | 'advance', delayMs: number, fn: () => void) {
+    window.clearTimeout(this.timer);
+    this.timerKind = kind;
+    this.timerFn = fn;
+    this.timerDeadline = Date.now() + delayMs;
+    this.timer = window.setTimeout(() => {
+      this.timerKind = null;
+      fn();
+    }, delayMs);
+  }
+
   private openPeer() {
     this.peer?.destroy();
-    this.code = this.resume ? this.resume.code : generateRoomCode();
+    this.code = this.revival ? this.revival.code : generateRoomCode();
     const peer = new Peer(peerIdForRoom(this.code), peerOptions());
     this.peer = peer;
 
     peer.on('open', (id) => {
       if (this.destroyed) return;
       this.selfId = id;
-      if (this.resume) {
-        this.restoreFromSnapshot(this.resume, id);
+      if (this.revival) {
+        this.restoreFromSnapshot(this.revival, id);
       } else {
         this.players = [{ id, name: this.hostName, team: null, connected: true }];
         this.emit({ phase: 'lobby', selfId: id, lobby: this.lobbyState() });
@@ -102,13 +121,13 @@ export class HostSession {
     peer.on('error', (err: Error & { type?: string }) => {
       if (this.destroyed) return;
       if (err.type === 'unavailable-id') {
-        if (this.resume && this.codeRetries < MAX_REVIVE_RETRIES) {
+        if (this.revival && this.codeRetries < MAX_REVIVE_RETRIES) {
           // Our own pre-reload registration usually clears within seconds.
           this.codeRetries++;
           window.setTimeout(() => this.openPeer(), REVIVE_RETRY_DELAY_MS);
           return;
         }
-        if (!this.resume && this.codeRetries < MAX_CODE_RETRIES) {
+        if (!this.revival && this.codeRetries < MAX_CODE_RETRIES) {
           // Someone else holds this room code on the broker — roll a new one.
           this.codeRetries++;
           this.openPeer();
@@ -261,7 +280,12 @@ export class HostSession {
             prompt: this.deck[this.roundIndex].prompt,
             durationMs:
               phase === 'question'
-                ? Math.max(600, this.roundDeadline - Date.now())
+                ? Math.max(
+                    600,
+                    this.paused
+                      ? this.pausedRemaining - NETWORK_GRACE_MS
+                      : this.roundDeadline - Date.now()
+                  )
                 : 0,
           }
         : undefined;
@@ -274,6 +298,7 @@ export class HostSession {
       result: phase === 'reveal' ? this.lastResult : undefined,
       scores: { ...this.scores },
       answered: this.roundAnswers.has(playerId),
+      paused: this.paused,
     });
   }
 
@@ -324,21 +349,53 @@ export class HostSession {
       round: { index, total: this.deck.length, prompt: this.deck[index].prompt, durationMs },
       result: undefined,
       answered: false,
+      paused: false,
     });
-    this.timer = window.setTimeout(
-      () => this.finishRound(),
-      durationMs + NETWORK_GRACE_MS
-    );
+    this.armTimer('question', durationMs + NETWORK_GRACE_MS, () => this.finishRound());
     this.saveSnapshot();
   }
 
   /** The host plays too — answers go through the same path as everyone's. */
   answer(action: Action) {
+    if (this.paused) return;
     this.recordAnswer(this.selfId, this.roundIndex, action);
     this.emit({ answered: true });
   }
 
+  /** Freeze the clock for everyone; only the host can do this. */
+  pause() {
+    if (!this.started || this.paused || !this.timerKind) return;
+    this.paused = true;
+    window.clearTimeout(this.timer);
+    this.pausedRemaining = Math.max(0, this.timerDeadline - Date.now());
+    this.broadcast({ type: 'pause' });
+    this.emit({ paused: true });
+  }
+
+  resume() {
+    if (!this.paused || !this.timerKind || !this.timerFn) return;
+    this.paused = false;
+    if (this.timerKind === 'question') {
+      this.roundDeadline = Date.now() + Math.max(0, this.pausedRemaining - NETWORK_GRACE_MS);
+    }
+    this.armTimer(this.timerKind, this.pausedRemaining, this.timerFn);
+    this.broadcast({ type: 'resume' });
+    this.emit({ paused: false });
+  }
+
+  /** Stop early: current scores become final for everyone. */
+  endGame() {
+    if (!this.started || this.view.phase === 'over') return;
+    window.clearTimeout(this.timer);
+    this.timerKind = null;
+    this.paused = false;
+    this.broadcast({ type: 'gameover', scores: { ...this.scores } });
+    this.emit({ phase: 'over', paused: false });
+    clearHostState();
+  }
+
   private recordAnswer(playerId: string, index: number, action: Action) {
+    if (this.paused) return;
     if (index !== this.roundIndex || this.view.phase !== 'question') return;
     if (this.roundAnswers.has(playerId)) return;
     this.roundAnswers.set(playerId, action);
@@ -346,6 +403,7 @@ export class HostSession {
   }
 
   private maybeFinishEarly() {
+    if (this.paused) return;
     if (this.view.phase !== 'question' || !this.started) return;
     const active = this.players.filter((p) => p.connected);
     if (active.length > 0 && active.every((p) => this.roundAnswers.has(p.id))) {
@@ -380,7 +438,7 @@ export class HostSession {
     // This round's points are banked: a revival must not replay it.
     this.resumeRoundIndex = this.roundIndex + 1;
     this.saveSnapshot();
-    this.timer = window.setTimeout(() => {
+    this.armTimer('advance', REVEAL_MS + BETWEEN_ROUNDS_MS, () => {
       if (isLast) {
         this.broadcast({ type: 'gameover', scores: { ...this.scores } });
         this.emit({ phase: 'over' });
@@ -388,7 +446,7 @@ export class HostSession {
       } else {
         this.startRound(this.roundIndex + 1);
       }
-    }, REVEAL_MS + BETWEEN_ROUNDS_MS);
+    });
   }
 
   // ── Plumbing ─────────────────────────────────────────────────────
