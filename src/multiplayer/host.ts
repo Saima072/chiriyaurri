@@ -5,11 +5,13 @@ import { buildDeck, roundDuration, scoreRound, REVEAL_MS } from '../game/engine'
 import {
   generateRoomCode,
   peerIdForRoom,
+  sanitizeToken,
   type ClientMessage,
   type HostMessage,
   type LobbyState,
   type PlayerInfo,
   type RoomView,
+  type RoundResult,
 } from './protocol';
 
 /** Extra time on top of the visible countdown to absorb network latency. */
@@ -35,6 +37,8 @@ export class HostSession {
   private deck: UrriEntry[] = [];
   private roundIndex = -1;
   private roundAnswers = new Map<string, Action>();
+  private roundDeadline = 0;
+  private lastResult: RoundResult | undefined;
   private scores: Record<string, number> = {};
   private view: RoomView;
   private timer: number | undefined;
@@ -70,6 +74,12 @@ export class HostSession {
 
     peer.on('connection', (conn) => this.acceptConnection(conn));
 
+    // Keep the room joinable if the broker socket drops (e.g. host tab
+    // was backgrounded); live game connections don't need the broker.
+    peer.on('disconnected', () => {
+      if (!this.destroyed && peer === this.peer) peer.reconnect();
+    });
+
     peer.on('error', (err: Error & { type?: string }) => {
       if (this.destroyed) return;
       // Someone else holds this room code on the broker — roll a new one.
@@ -83,40 +93,79 @@ export class HostSession {
   }
 
   private acceptConnection(conn: DataConnection) {
+    // Players are keyed by the stable token they present in `hello`, not by
+    // the PeerJS connection id — that's what lets a reconnect reclaim a seat.
+    let playerId: string | null = null;
+
     conn.on('data', (data) => {
       const msg = data as ClientMessage;
       if (msg?.type === 'hello') {
-        if (this.started) {
+        const requested = sanitizeToken(String(msg.token ?? '')) || conn.peer;
+        const name = String(msg.name).slice(0, 20) || 'Player';
+        const existing = this.players.find((p) => p.id === requested);
+        if (!existing && this.started) {
           this.sendTo(conn, { type: 'rejected', reason: 'The game has already started.' });
           setTimeout(() => conn.close(), 500);
           return;
         }
-        this.connections.set(conn.peer, conn);
-        const name = String(msg.name).slice(0, 20) || 'Player';
-        this.players = this.players
-          .filter((p) => p.id !== conn.peer)
-          .concat({ id: conn.peer, name, team: null, connected: true });
-        this.reassignTeams();
-        this.sendTo(conn, { type: 'welcome', selfId: conn.peer, lobby: this.lobbyState() });
+        playerId = requested;
+        const previous = this.connections.get(requested);
+        this.connections.set(requested, conn);
+        if (previous && previous !== conn) previous.close();
+        if (existing) {
+          // Returning player: same seat, same score.
+          this.players = this.players.map((p) =>
+            p.id === requested ? { ...p, name, connected: true } : p
+          );
+        } else {
+          this.players = [
+            ...this.players,
+            { id: requested, name, team: null, connected: true },
+          ];
+          this.reassignTeams();
+        }
+        this.sendTo(conn, { type: 'welcome', selfId: requested, lobby: this.lobbyState() });
+        if (this.started) this.sendSync(conn, requested);
         this.broadcastLobby();
-      } else if (msg?.type === 'answer') {
-        this.recordAnswer(conn.peer, msg.index, msg.action);
+      } else if (msg?.type === 'answer' && playerId) {
+        this.recordAnswer(playerId, msg.index, msg.action);
       }
     });
 
-    conn.on('close', () => this.dropPlayer(conn.peer));
-    // An abruptly closed tab often never fires 'close'; ICE notices first.
-    conn.on('iceStateChanged', (state) => {
-      if (state === 'failed' || state === 'closed' || state === 'disconnected') {
-        this.dropPlayer(conn.peer);
+    conn.on('close', () => {
+      if (playerId && this.connections.get(playerId) === conn) {
+        this.dropPlayer(playerId);
       }
     });
+    // ICE sees network trouble before 'close' does — but 'disconnected' is
+    // often transient (backgrounded tab), so it only flags the player away.
+    conn.on('iceStateChanged', (state) => {
+      if (!playerId || this.connections.get(playerId) !== conn) return;
+      if (state === 'failed' || state === 'closed') {
+        this.dropPlayer(playerId);
+      } else if (state === 'disconnected') {
+        this.setPresence(playerId, false);
+      } else if (state === 'connected' || state === 'completed') {
+        this.setPresence(playerId, true);
+      }
+    });
+  }
+
+  private setPresence(playerId: string, connected: boolean) {
+    if (!this.connections.has(playerId)) return;
+    const player = this.players.find((p) => p.id === playerId);
+    if (!player || player.connected === connected) return;
+    this.players = this.players.map((p) =>
+      p.id === playerId ? { ...p, connected } : p
+    );
+    this.broadcastLobby();
+    if (!connected) this.maybeFinishEarly();
   }
 
   private dropPlayer(playerId: string) {
     if (!this.connections.delete(playerId)) return;
     if (this.started) {
-      // Keep their score on the board, just flag them as gone.
+      // Keep their score on the board and their seat free to reclaim.
       this.players = this.players.map((p) =>
         p.id === playerId ? { ...p, connected: false } : p
       );
@@ -126,6 +175,36 @@ export class HostSession {
     }
     this.broadcastLobby();
     this.maybeFinishEarly();
+  }
+
+  /** Bring a (re)joining player up to the exact current game position. */
+  private sendSync(conn: DataConnection, playerId: string) {
+    const phase =
+      this.view.phase === 'question' || this.view.phase === 'reveal' || this.view.phase === 'over'
+        ? this.view.phase
+        : 'lobby';
+    const round =
+      this.started && this.roundIndex >= 0
+        ? {
+            index: this.roundIndex,
+            total: this.deck.length,
+            prompt: this.deck[this.roundIndex].prompt,
+            durationMs:
+              phase === 'question'
+                ? Math.max(600, this.roundDeadline - Date.now())
+                : 0,
+          }
+        : undefined;
+    this.sendTo(conn, {
+      type: 'sync',
+      selfId: playerId,
+      lobby: this.lobbyState(),
+      phase,
+      round,
+      result: phase === 'reveal' ? this.lastResult : undefined,
+      scores: { ...this.scores },
+      answered: this.roundAnswers.has(playerId),
+    });
   }
 
   // ── Lobby controls (host UI) ─────────────────────────────────────
@@ -160,6 +239,7 @@ export class HostSession {
     this.roundIndex = index;
     this.roundAnswers.clear();
     const durationMs = roundDuration(index, this.deck.length);
+    this.roundDeadline = Date.now() + durationMs;
     const msg: HostMessage = {
       type: 'round',
       index,
@@ -215,6 +295,7 @@ export class HostSession {
       this.scores[p.id] = (this.scores[p.id] ?? 0) + outcome.points;
     }
     const result = { entry, answers, points };
+    this.lastResult = result;
     this.broadcast({
       type: 'result',
       index: this.roundIndex,

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import SoloGame from './components/SoloGame';
 import TeamGame from './components/TeamGame';
 import OnlineGame from './components/online/OnlineGame';
+import { loadResume } from './multiplayer/resume';
 
 type Mode = 'menu' | 'solo' | 'teams' | 'online';
 
@@ -27,7 +28,8 @@ const Sky: React.FC = () => (
 );
 
 const App: React.FC = () => {
-  const [mode, setMode] = useState<Mode>('menu');
+  // A reload mid-game should land back in the room, not on the menu.
+  const [mode, setMode] = useState<Mode>(() => (loadResume() ? 'online' : 'menu'));
   const backToMenu = () => setMode('menu');
 
   return (

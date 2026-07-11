@@ -80,12 +80,30 @@ renders both sides of the room.
 **Edge cases handled:**
 - Rounds end early once every connected player has answered.
 - Timed-out players are scored as implicit "stay" — same rule as solo.
-- Mid-game joins are rejected politely; lobby joins after a disconnect
-  reuse the seat.
-- A player closing their tab often never fires the PeerJS `close` event, so
-  `iceStateChanged` (failed/closed/disconnected) also drops them; their
-  score stays on the board flagged "(left)", and the game continues.
+- Mid-game joins by strangers are rejected politely.
 - Teams auto-assign alternately as players arrive; free-for-all is one click.
+
+**Away players and reconnection.** A backgrounded tab (very common on
+phones) drops the WebRTC link, and originally that showed a dead-end error.
+Now:
+
+- Every guest carries a stable `token` (persisted in `localStorage`), and
+  the host keys seats and scores by token, not by the ephemeral PeerJS
+  connection id — so a returning player reclaims their seat and score.
+- The client auto-reconnects with backoff (and immediately when the tab
+  becomes visible again), showing "Reconnecting…" instead of an error.
+- On rejoin the host sends a `sync` message with the full game position:
+  current round with *remaining* time, reveal result, scores, and whether
+  the player had already answered.
+- A full page reload also recovers: room code, name, and token are stored
+  (2-hour expiry) and the app walks straight back into the room on load.
+- Host-side, ICE `disconnected` is treated as transient (player flagged
+  away, recoverable); only `failed`/`closed`/`close` drop the connection —
+  and even then the seat stays reserved for the token. Games never stall
+  on an away player: rounds still end on the deadline, scoring them as an
+  implicit stay.
+- The host is the one seat that can't recover from a reload — the room
+  lives in the host's browser. That's inherent to the serverless design.
 
 ## Verification
 

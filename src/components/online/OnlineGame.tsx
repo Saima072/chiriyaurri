@@ -6,6 +6,7 @@ import Scoreboard from './Scoreboard';
 import { HostSession } from '../../multiplayer/host';
 import { ClientSession } from '../../multiplayer/client';
 import { teamTotals, type RoomView } from '../../multiplayer/protocol';
+import { clearResume, loadResume, newToken, saveResume } from '../../multiplayer/resume';
 import { scoreRound, ROUND_OPTIONS } from '../../game/engine';
 import type { Action } from '../../types';
 
@@ -17,20 +18,43 @@ const OnlineGame: React.FC<{ onExit: () => void }> = ({ onExit }) => {
   const [view, setView] = useState<RoomView | null>(null);
   const sessionRef = useRef<Session | null>(null);
 
-  useEffect(() => () => sessionRef.current?.destroy(), []);
+  // If we were in a room before a reload, walk straight back into it.
+  useEffect(() => {
+    const resume = loadResume();
+    if (resume && !sessionRef.current) {
+      setName(resume.name);
+      setCode(resume.code);
+      sessionRef.current = new ClientSession(resume.code, resume.name, resume.token, setView);
+    }
+    return () => {
+      sessionRef.current?.destroy();
+      sessionRef.current = null;
+    };
+  }, []);
+
+  // A finished game is not worth resuming.
+  useEffect(() => {
+    if (view?.phase === 'over') clearResume();
+  }, [view?.phase]);
 
   const leave = () => {
+    clearResume();
     sessionRef.current?.destroy();
     sessionRef.current = null;
     setView(null);
   };
 
   const host = () => {
+    clearResume();
     sessionRef.current = new HostSession(name.trim() || 'Host', setView);
   };
 
   const join = () => {
-    sessionRef.current = new ClientSession(code.trim(), name.trim() || 'Player', setView);
+    const roomCode = code.trim().toUpperCase();
+    const playerName = name.trim() || 'Player';
+    const token = newToken();
+    saveResume({ code: roomCode, name: playerName, token });
+    sessionRef.current = new ClientSession(roomCode, playerName, token, setView);
   };
 
   const sendAnswer = (action: Action) => sessionRef.current?.answer(action);
@@ -70,10 +94,15 @@ const OnlineGame: React.FC<{ onExit: () => void }> = ({ onExit }) => {
     );
   }
 
-  if (view.phase === 'connecting') {
+  if (view.phase === 'connecting' || view.phase === 'reconnecting') {
     return (
       <div className="panel">
-        <h2>Connecting…</h2>
+        <h2>{view.phase === 'connecting' ? 'Connecting…' : 'Reconnecting…'}</h2>
+        {view.phase === 'reconnecting' && (
+          <p className="waiting-note">
+            Connection hiccup — your seat and score are safe. Hang tight.
+          </p>
+        )}
         <button className="link" onClick={leave}>
           Cancel
         </button>
@@ -178,7 +207,14 @@ const OnlineGame: React.FC<{ onExit: () => void }> = ({ onExit }) => {
   }
 
   // ── Question / reveal ────────────────────────────────────────────
-  const round = view.round!;
+  if (!view.round) {
+    return (
+      <div className="panel">
+        <h2>Rejoining the game…</h2>
+      </div>
+    );
+  }
+  const round = view.round;
   const selfOutcome =
     view.phase === 'reveal' && view.result
       ? scoreRound(view.result.entry, view.result.answers[view.selfId] ?? null)
