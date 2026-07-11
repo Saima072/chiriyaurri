@@ -1,68 +1,407 @@
+:root {
+  --sky-top: #aee3f7;
+  --sky-bottom: #f3fbff;
+  --ink: #21384a;
+  --accent: #2f89c5;
+  --accent-dark: #226a9b;
+  --good: #2e9e5b;
+  --bad: #d1495b;
+  --team-a: #2f89c5;
+  --team-b: #d97b29;
+}
+
+* {
+  box-sizing: border-box;
+}
+
 body {
-  font-family: Arial, sans-serif;
-  margin: auto;
-  padding: 0;
+  margin: 0;
+  font-family: 'Segoe UI', 'Noto Sans', Arial, sans-serif;
+  color: var(--ink);
+  background: linear-gradient(180deg, var(--sky-top), var(--sky-bottom));
+  min-height: 100vh;
+  overflow-x: hidden;
   text-align: center;
-  background-color: #f0f0f0;
 }
 
 .App {
+  position: relative;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-content: center;
   align-items: center;
-  height: 100vh;
+  min-height: 100vh;
+  padding: 1.5rem 1rem 3rem;
 }
 
-div {
-  margin-top: 10px;
+h1 {
+  margin: 0.5rem 0 1rem;
+  font-size: clamp(1.8rem, 5vw, 2.8rem);
+  text-shadow: 0 2px 0 rgba(255, 255, 255, 0.7);
 }
 
+/* ── Background birds ─────────────────────────────────────────── */
+.sky {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.flying-bird {
+  position: absolute;
+  left: -60px;
+  opacity: 0.5;
+  animation: fly-across linear infinite;
+}
+
+@keyframes fly-across {
+  0% {
+    transform: translateX(0) translateY(0);
+  }
+  50% {
+    transform: translateX(55vw) translateY(-3vh);
+  }
+  100% {
+    transform: translateX(115vw) translateY(2vh);
+  }
+}
+
+/* ── Panels ───────────────────────────────────────────────────── */
+.panel {
+  position: relative;
+  z-index: 1;
+  width: min(560px, 100%);
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(33, 56, 74, 0.15);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.tagline {
+  font-size: 1.05rem;
+  margin: 0;
+}
+
+.rules {
+  border-top: 1px dashed #c3d8e6;
+  padding-top: 0.5rem;
+  font-size: 0.92rem;
+  color: #46607a;
+}
+
+.rules h3 {
+  margin: 0.3rem 0;
+}
+
+/* ── Buttons and inputs ───────────────────────────────────────── */
 button {
-  margin: 10px;
-  padding: 10px 20px;
-  font-size: 16px;
-  border: 2px solid #3498db;
-  background-color: #3498db;
+  padding: 10px 22px;
+  font-size: 1rem;
+  border: 2px solid var(--accent);
+  background: var(--accent);
   color: white;
   cursor: pointer;
-  transition: all 0.3s ease;
+  border-radius: 8px;
+  transition:
+    transform 0.15s ease,
+    background 0.15s ease;
+}
+
+button:hover:not(:disabled) {
+  background: var(--accent-dark);
+  transform: translateY(-1px);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+button.primary {
+  width: min(300px, 100%);
+  font-weight: 600;
+}
+
+button.selected {
+  background: var(--accent-dark);
+  box-shadow: inset 0 0 0 2px white;
+}
+
+button.link {
+  background: none;
+  border: none;
+  color: var(--accent-dark);
+  text-decoration: underline;
+  padding: 4px;
+}
+
+input {
+  padding: 10px 12px;
+  font-size: 1rem;
+  border: 2px solid #b8d4e6;
+  border-radius: 8px;
+  text-align: center;
+  width: min(260px, 100%);
+}
+
+input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.option-row,
+.join-row,
+.name-inputs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+  align-items: center;
+}
+
+.name-inputs input {
+  width: 170px;
+}
+
+.join-row input {
+  width: 140px;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+}
+
+/* ── Round chrome ─────────────────────────────────────────────── */
+.round-meta {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  font-weight: 600;
+  color: #46607a;
+}
+
+.turn-banner {
+  width: 100%;
+  padding: 8px;
+  border-radius: 8px;
+  font-weight: 600;
+  color: white;
+}
+
+.turn-banner.team-0 {
+  background: var(--team-a);
+}
+
+.turn-banner.team-1 {
+  background: var(--team-b);
+}
+
+.countdown {
+  width: 100%;
+  height: 10px;
+  background: #dcebf5;
   border-radius: 5px;
-}
-
-button:hover {
-  background-color: #2980b9;
-  transform: scale(1.1);
-}
-
-button:active {
-  transform: scale(1);
-}
-
-/* styles.css */
-body {
-  background-color: white;
-  margin: 0;
   overflow: hidden;
 }
 
-.flying-object {
-  position: absolute;
-  width: 50px;
-  height: 50px;
-  background-color: #3498db;
-  border-radius: 50%;
-  animation: fly 10s linear infinite;
+.countdown-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--good), #e3b62c, var(--bad));
+  animation: shrink linear forwards;
 }
 
-@keyframes fly {
-  0% {
-    transform: translateX(0) translateY(0);
-    opacity: 0.5;
+@keyframes shrink {
+  from {
+    width: 100%;
   }
-  100% {
-    transform: translateX(100vw) translateY(100vh);
-    opacity: 0;
+  to {
+    width: 0%;
   }
+}
+
+/* ── Prompt card ──────────────────────────────────────────────── */
+.prompt-card {
+  width: 100%;
+  min-height: 170px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 0.35rem;
+  background: #f4fafe;
+  border: 2px solid #cfe5f2;
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.prompt-call {
+  font-size: clamp(1.6rem, 6vw, 2.4rem);
+  font-weight: 700;
+}
+
+.prompt-hint {
+  color: #6d8aa3;
+}
+
+.prompt-card.reveal.good {
+  border-color: var(--good);
+  background: #eefaf2;
+}
+
+.prompt-card.reveal.bad {
+  border-color: var(--bad);
+  background: #fdf0f2;
+}
+
+.reveal-emoji {
+  font-size: 3rem;
+  line-height: 1;
+}
+
+.reveal-meaning {
+  color: #46607a;
+}
+
+.reveal-verdict {
+  font-weight: 700;
+}
+
+.reveal .reveal-verdict {
+  color: var(--good);
+}
+
+.reveal.bad .reveal-verdict {
+  color: var(--bad);
+}
+
+.reveal-note {
+  font-size: 0.88rem;
+  font-style: italic;
+  color: #6d8aa3;
+}
+
+/* ── Fly / stay buttons ───────────────────────────────────────── */
+.fly-stay {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.btn-fly {
+  background: var(--accent);
+  border-color: var(--accent);
+  font-size: 1.15rem;
+  padding: 14px 26px;
+}
+
+.btn-stay {
+  background: #7a6552;
+  border-color: #7a6552;
+  font-size: 1.15rem;
+  padding: 14px 26px;
+}
+
+.btn-stay:hover:not(:disabled) {
+  background: #5f4e3f;
+}
+
+.waiting-note {
+  color: #6d8aa3;
+  font-style: italic;
+  margin: 0.5rem 0;
+}
+
+.final-score {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin: 0.25rem 0;
+}
+
+.room-code-hint strong {
+  letter-spacing: 0.2em;
+  font-size: 1.2rem;
+}
+
+/* ── Scoreboard ───────────────────────────────────────────────── */
+.scoreboard {
+  width: 100%;
+}
+
+.scoreboard ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.scoreboard li {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: #f4fafe;
+  border-radius: 8px;
+  padding: 6px 12px;
+}
+
+.scoreboard li.disconnected {
+  opacity: 0.5;
+}
+
+.player-name {
+  flex: 1;
+  text-align: left;
+  font-weight: 600;
+}
+
+.player-score {
+  font-weight: 700;
+  min-width: 2ch;
+}
+
+.round-action.good {
+  color: var(--good);
+}
+
+.round-action.bad {
+  color: var(--bad);
+}
+
+.badge {
+  display: inline-block;
+  min-width: 1.4em;
+  margin-right: 6px;
+  border-radius: 6px;
+  color: white;
+  font-size: 0.8rem;
+  padding: 1px 5px;
+}
+
+.badge.team-a {
+  background: var(--team-a);
+}
+
+.badge.team-b {
+  background: var(--team-b);
+}
+
+.team-totals {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 0.4rem;
+}
+
+.team-a {
+  color: var(--team-a);
+}
+
+.team-b {
+  color: var(--team-b);
 }
