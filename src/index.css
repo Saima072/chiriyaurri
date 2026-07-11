@@ -14,14 +14,25 @@
   box-sizing: border-box;
 }
 
+html,
 body {
   margin: 0;
+  height: 100%;
+  /* No pull-to-refresh/rubber-banding — feels wrong wrapped in a native shell. */
+  overscroll-behavior-y: contain;
+}
+
+body {
   font-family: 'Segoe UI', 'Noto Sans', Arial, sans-serif;
   color: var(--ink);
   background: linear-gradient(180deg, var(--sky-top), var(--sky-bottom));
   min-height: 100vh;
   overflow-x: hidden;
   text-align: center;
+  /* Rapid tapping shouldn't trigger text selection or callout menus. */
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 }
 
 .App {
@@ -31,6 +42,11 @@ body {
   align-items: center;
   min-height: 100vh;
   padding: 1.5rem 1rem 3rem;
+  /* Clear the notch / home indicator on phones; 0 everywhere else. */
+  padding-top: max(1.5rem, env(safe-area-inset-top));
+  padding-bottom: max(3rem, env(safe-area-inset-bottom));
+  padding-left: max(1rem, env(safe-area-inset-left));
+  padding-right: max(1rem, env(safe-area-inset-right));
 }
 
 h1 {
@@ -110,6 +126,8 @@ button {
   transition:
     transform 0.15s ease,
     background 0.15s ease;
+  /* Removes the ~300ms tap delay and double-tap-zoom on touch screens. */
+  touch-action: manipulation;
 }
 
 button:hover:not(:disabled) {
@@ -147,6 +165,9 @@ input {
   border-radius: 8px;
   text-align: center;
   width: min(260px, 100%);
+  /* Inputs are the one place typing/selection should still work. */
+  -webkit-user-select: text;
+  user-select: text;
 }
 
 input:focus {

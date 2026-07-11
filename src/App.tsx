@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { App as CapacitorApp } from '@capacitor/app';
+import { Capacitor } from '@capacitor/core';
 import SoloGame from './components/SoloGame';
 import TeamGame from './components/TeamGame';
 import OnlineGame from './components/online/OnlineGame';
@@ -31,6 +33,24 @@ const App: React.FC = () => {
   // A reload mid-game should land back in the room, not on the menu.
   const [mode, setMode] = useState<Mode>(() => (latestActiveRoom() ? 'online' : 'menu'));
   const backToMenu = () => setMode('menu');
+
+  // Android's hardware/gesture back button: step back to the menu first,
+  // only exit the app from there — otherwise it would quit mid-game.
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+    const listener = CapacitorApp.addListener('backButton', () => {
+      setMode((current) => {
+        if (current === 'menu') {
+          CapacitorApp.exitApp();
+          return current;
+        }
+        return 'menu';
+      });
+    });
+    return () => {
+      listener.then((l) => l.remove());
+    };
+  }, []);
 
   return (
     <div className="App">

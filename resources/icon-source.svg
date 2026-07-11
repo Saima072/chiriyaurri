@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#aee3f7"/>
+      <stop offset="1" stop-color="#2f89c5"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" fill="url(#bg)"/>
+  <!-- Two swept-back wings with a gap between them: a bird in flight, seen from behind -->
+  <path d="M 210,660 Q 360,480 502,560" fill="none" stroke="#ffffff"
+        stroke-width="64" stroke-linecap="round"/>
+  <path d="M 522,560 Q 664,480 814,660" fill="none" stroke="#ffffff"
+        stroke-width="64" stroke-linecap="round"/>
+</svg>

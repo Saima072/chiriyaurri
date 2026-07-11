@@ -4,6 +4,7 @@ import FlyStayButtons from './FlyStayButtons';
 import PauseCard from './PauseCard';
 import PromptCard from './PromptCard';
 import { useRoundRunner } from '../game/useRoundRunner';
+import { useBackgroundPause } from '../game/useBackgroundPause';
 import { bestStreak, totalPoints, ROUND_OPTIONS } from '../game/engine';
 
 const SoloRun: React.FC<{ rounds: number; onDone: () => void }> = ({ rounds, onDone }) => {
@@ -20,6 +21,7 @@ const SoloRun: React.FC<{ rounds: number; onDone: () => void }> = ({ rounds, onD
     lastOutcome,
     answer,
   } = useRoundRunner(rounds);
+  useBackgroundPause(phase === 'playing' && !paused, pause);
 
   if (phase === 'over') {
     const score = totalPoints(outcomes);

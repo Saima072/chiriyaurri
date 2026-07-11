@@ -1,0 +1,11 @@
+<!--
+  Android adaptive-icon foreground layer: transparent background, glyph
+  kept inside the ~61% center "safe zone" so circle/squircle/rounded-square
+  launcher masks never clip the bird.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <path d="M 330,600 Q 430,500 502,540" fill="none" stroke="#ffffff"
+        stroke-width="42" stroke-linecap="round"/>
+  <path d="M 522,540 Q 594,500 694,600" fill="none" stroke="#ffffff"
+        stroke-width="42" stroke-linecap="round"/>
+</svg>
