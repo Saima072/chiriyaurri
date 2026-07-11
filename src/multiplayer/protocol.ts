@@ -18,6 +18,11 @@ export function peerIdForRoom(code: string): string {
   return `chiriya-urri-${code.toUpperCase()}`;
 }
 
+/** Player tokens travel over the wire; keep them boring. */
+export function sanitizeToken(raw: string): string {
+  return raw.replace(/[^A-Za-z0-9_-]/g, '').slice(0, 40);
+}
+
 // ── Shared room state ──────────────────────────────────────────────
 export type PlayerInfo = {
   id: string;
@@ -49,15 +54,35 @@ export type HostMessage =
   | { type: 'round'; index: number; total: number; prompt: string; durationMs: number }
   | { type: 'result'; index: number; result: RoundResult; scores: Record<string, number> }
   | { type: 'gameover'; scores: Record<string, number> }
-  | { type: 'rejected'; reason: string };
+  | { type: 'rejected'; reason: string }
+  /** Full game position, so a reconnecting player lands exactly where the room is. */
+  | {
+      type: 'sync';
+      selfId: string;
+      lobby: LobbyState;
+      phase: 'lobby' | 'question' | 'reveal' | 'over';
+      /** During a question, durationMs is the REMAINING time, not the full window. */
+      round?: { index: number; total: number; prompt: string; durationMs: number };
+      result?: RoundResult;
+      scores: Record<string, number>;
+      answered: boolean;
+    };
 
 // ── Messages: client → host ────────────────────────────────────────
 export type ClientMessage =
-  | { type: 'hello'; name: string }
+  /** token is a stable per-player identity that survives reconnects and reloads. */
+  | { type: 'hello'; name: string; token: string }
   | { type: 'answer'; index: number; action: Action };
 
 // ── The view both sessions expose to the UI ────────────────────────
-export type RoomPhase = 'connecting' | 'lobby' | 'question' | 'reveal' | 'over' | 'error';
+export type RoomPhase =
+  | 'connecting'
+  | 'reconnecting'
+  | 'lobby'
+  | 'question'
+  | 'reveal'
+  | 'over'
+  | 'error';
 
 export type RoomView = {
   phase: RoomPhase;

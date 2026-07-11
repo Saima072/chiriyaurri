@@ -28,7 +28,9 @@ one floats).
   synced rounds, live scoreboard. The host's browser is the authoritative
   game server; peers talk directly over WebRTC ([PeerJS](https://peerjs.com)),
   brokered through the free public PeerJS cloud, so there is no server to
-  deploy.
+  deploy. Switching apps, losing signal, or even reloading the page won't
+  kick you out — the game reconnects automatically and your seat and score
+  are restored.
 
 ## Run it
 
