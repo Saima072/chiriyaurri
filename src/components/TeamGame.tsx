@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import CountdownBar from './CountdownBar';
 import FlyStayButtons from './FlyStayButtons';
+import PauseCard from './PauseCard';
 import PromptCard from './PromptCard';
 import { useRoundRunner } from '../game/useRoundRunner';
 import { ROUND_OPTIONS } from '../game/engine';
@@ -22,8 +23,19 @@ const TeamRun: React.FC<{
   names: [string, string];
   onDone: () => void;
 }> = ({ rounds, names, onDone }) => {
-  const { total, round, entry, durationMs, phase, outcomes, lastOutcome, answer } =
-    useRoundRunner(rounds);
+  const {
+    total,
+    round,
+    entry,
+    durationMs,
+    phase,
+    paused,
+    pause,
+    resume,
+    outcomes,
+    lastOutcome,
+    answer,
+  } = useRoundRunner(rounds);
   const scores = teamScores(outcomes);
 
   if (phase === 'over') {
@@ -48,6 +60,11 @@ const TeamRun: React.FC<{
         <span>
           Round {round + 1}/{total}
         </span>
+        {!paused && (
+          <button className="pause-btn" onClick={pause}>
+            ⏸ Pause
+          </button>
+        )}
         <span>
           {names[0]} {scores[0]} · {names[1]} {scores[1]}
         </span>
@@ -55,9 +72,20 @@ const TeamRun: React.FC<{
       <div className={`turn-banner team-${turn}`}>
         📣 {names[turn]} — your call! Pass the device!
       </div>
-      {phase === 'playing' && <CountdownBar durationMs={durationMs} resetKey={round} />}
-      <PromptCard prompt={entry.prompt} outcome={phase === 'reveal' ? lastOutcome : null} />
-      <FlyStayButtons onAction={answer} disabled={phase !== 'playing'} />
+      {phase === 'playing' && (
+        <CountdownBar durationMs={durationMs} resetKey={round} paused={paused} />
+      )}
+      {paused ? (
+        <PauseCard>
+          <button className="primary" onClick={resume}>
+            ▶ Resume
+          </button>
+          <button onClick={onDone}>Quit</button>
+        </PauseCard>
+      ) : (
+        <PromptCard prompt={entry.prompt} outcome={phase === 'reveal' ? lastOutcome : null} />
+      )}
+      <FlyStayButtons onAction={answer} disabled={phase !== 'playing' || paused} />
     </div>
   );
 };

@@ -1,51 +1,104 @@
 import React, { useEffect, useRef, useState } from 'react';
 import CountdownBar from '../CountdownBar';
 import FlyStayButtons from '../FlyStayButtons';
+import PauseCard from '../PauseCard';
 import PromptCard from '../PromptCard';
 import Scoreboard from './Scoreboard';
 import { HostSession } from '../../multiplayer/host';
 import { ClientSession } from '../../multiplayer/client';
 import { teamTotals, type RoomView } from '../../multiplayer/protocol';
-import { clearResume, loadResume, newToken, saveResume } from '../../multiplayer/resume';
+import {
+  latestActiveRoom,
+  listRooms,
+  newToken,
+  recordRoom,
+  removeRoom,
+  setRoomActive,
+  type RoomRecord,
+} from '../../multiplayer/history';
+import { blankSnapshot, clearHostState, loadHostState } from '../../multiplayer/hostState';
 import { scoreRound, ROUND_OPTIONS } from '../../game/engine';
 import type { Action } from '../../types';
 
 type Session = HostSession | ClientSession;
 
+const timeAgo = (t: number): string => {
+  const mins = Math.round((Date.now() - t) / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins} min ago`;
+  return `${Math.round(mins / 60)} h ago`;
+};
+
 const OnlineGame: React.FC<{ onExit: () => void }> = ({ onExit }) => {
   const [name, setName] = useState('');
   const [code, setCode] = useState('');
+  const [rooms, setRooms] = useState<RoomRecord[]>(() => listRooms());
   const [view, setView] = useState<RoomView | null>(null);
   const sessionRef = useRef<Session | null>(null);
 
-  // If we were in a room before a reload, walk straight back into it.
-  useEffect(() => {
-    const resume = loadResume();
-    if (resume && !sessionRef.current) {
-      setName(resume.name);
-      setCode(resume.code);
-      sessionRef.current = new ClientSession(resume.code, resume.name, resume.token, setView);
+  const rejoin = (room: RoomRecord) => {
+    setName(room.name);
+    setCode(room.code);
+    setRoomActive(room.code, true);
+    if (room.role === 'host') {
+      // Revive the room with its saved game state, or re-open it empty.
+      const snap = loadHostState();
+      sessionRef.current = new HostSession(
+        room.name,
+        setView,
+        snap && snap.code === room.code ? snap : blankSnapshot(room.code, room.name)
+      );
+    } else {
+      sessionRef.current = new ClientSession(
+        room.code,
+        room.name,
+        room.token ?? newToken(),
+        setView
+      );
     }
+  };
+
+  // If we were in a room before a reload, walk straight back into it —
+  // as guest OR as host (the room itself is revived from its snapshot).
+  useEffect(() => {
+    const room = latestActiveRoom();
+    if (room && !sessionRef.current) rejoin(room);
     return () => {
       sessionRef.current?.destroy();
       sessionRef.current = null;
     };
   }, []);
 
+  // Once hosting, the room code is known — remember it for the rooms list.
+  useEffect(() => {
+    if (view?.isHost && view.lobby?.code) {
+      const self = view.lobby.players.find((p) => p.id === view.lobby?.hostId);
+      recordRoom({
+        code: view.lobby.code,
+        name: self?.name ?? 'Host',
+        role: 'host',
+        active: true,
+      });
+    }
+  }, [view?.isHost, view?.lobby?.code, view?.lobby]);
+
   // A finished game is not worth resuming.
   useEffect(() => {
-    if (view?.phase === 'over') clearResume();
-  }, [view?.phase]);
+    if (view?.phase === 'over' && view.lobby?.code) {
+      setRoomActive(view.lobby.code, false);
+    }
+  }, [view?.phase, view?.lobby?.code]);
 
   const leave = () => {
-    clearResume();
+    if (view?.lobby?.code) setRoomActive(view.lobby.code, false);
+    if (view?.isHost) clearHostState();
     sessionRef.current?.destroy();
     sessionRef.current = null;
     setView(null);
+    setRooms(listRooms());
   };
 
   const host = () => {
-    clearResume();
     sessionRef.current = new HostSession(name.trim() || 'Host', setView);
   };
 
@@ -53,7 +106,7 @@ const OnlineGame: React.FC<{ onExit: () => void }> = ({ onExit }) => {
     const roomCode = code.trim().toUpperCase();
     const playerName = name.trim() || 'Player';
     const token = newToken();
-    saveResume({ code: roomCode, name: playerName, token });
+    recordRoom({ code: roomCode, name: playerName, role: 'guest', token, active: true });
     sessionRef.current = new ClientSession(roomCode, playerName, token, setView);
   };
 
@@ -87,6 +140,34 @@ const OnlineGame: React.FC<{ onExit: () => void }> = ({ onExit }) => {
             Join
           </button>
         </div>
+        {rooms.length > 0 && (
+          <div className="recent-rooms">
+            <h3>Recent rooms</h3>
+            {rooms.map((room) => (
+              <div className="room-row" key={room.code}>
+                <span className="room-code">
+                  {room.role === 'host' ? '👑' : '🎮'} {room.code}
+                </span>
+                <span className="room-sub">
+                  {room.name} · {timeAgo(room.savedAt)}
+                </span>
+                <button className="room-join" onClick={() => rejoin(room)}>
+                  {room.role === 'host' ? 'Re-open' : 'Rejoin'}
+                </button>
+                <button
+                  className="link room-remove"
+                  aria-label={`Forget room ${room.code}`}
+                  onClick={() => {
+                    removeRoom(room.code);
+                    setRooms(listRooms());
+                  }}
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
         <button className="link" onClick={onExit}>
           ← Back
         </button>
@@ -226,20 +307,45 @@ const OnlineGame: React.FC<{ onExit: () => void }> = ({ onExit }) => {
         <span>
           Round {round.index + 1}/{round.total}
         </span>
+        {hostSession && !view.paused && (
+          <button className="pause-btn" onClick={() => hostSession.pause()}>
+            ⏸ Pause
+          </button>
+        )}
         <span>Room {lobby.code}</span>
       </div>
       {view.phase === 'question' && (
         <CountdownBar
           durationMs={round.durationMs}
           resetKey={round.index}
-          paused={view.answered}
+          paused={view.answered || view.paused}
         />
       )}
-      <PromptCard prompt={round.prompt} outcome={selfOutcome} />
-      {view.phase === 'question' && view.answered ? (
+      {view.paused ? (
+        <PauseCard message={hostSession ? undefined : 'The host has paused the game.'}>
+          {hostSession ? (
+            <>
+              <button className="primary" onClick={() => hostSession.resume()}>
+                ▶ Resume
+              </button>
+              <button onClick={() => hostSession.endGame()}>End game</button>
+            </>
+          ) : (
+            <button className="link" onClick={leave}>
+              Leave room
+            </button>
+          )}
+        </PauseCard>
+      ) : (
+        <PromptCard prompt={round.prompt} outcome={selfOutcome} />
+      )}
+      {view.phase === 'question' && view.answered && !view.paused ? (
         <p className="waiting-note">Answer locked in — waiting for the others…</p>
       ) : (
-        <FlyStayButtons onAction={sendAnswer} disabled={view.phase !== 'question'} />
+        <FlyStayButtons
+          onAction={sendAnswer}
+          disabled={view.phase !== 'question' || view.paused}
+        />
       )}
       <Scoreboard
         lobby={lobby}
@@ -247,6 +353,11 @@ const OnlineGame: React.FC<{ onExit: () => void }> = ({ onExit }) => {
         selfId={view.selfId}
         result={view.phase === 'reveal' ? view.result : undefined}
       />
+      {!view.isHost && (
+        <button className="link" onClick={leave}>
+          Leave game
+        </button>
+      )}
     </div>
   );
 };

@@ -55,6 +55,8 @@ export type HostMessage =
   | { type: 'result'; index: number; result: RoundResult; scores: Record<string, number> }
   | { type: 'gameover'; scores: Record<string, number> }
   | { type: 'rejected'; reason: string }
+  | { type: 'pause' }
+  | { type: 'resume' }
   /** Full game position, so a reconnecting player lands exactly where the room is. */
   | {
       type: 'sync';
@@ -66,6 +68,7 @@ export type HostMessage =
       result?: RoundResult;
       scores: Record<string, number>;
       answered: boolean;
+      paused?: boolean;
     };
 
 // ── Messages: client → host ────────────────────────────────────────
@@ -95,6 +98,8 @@ export type RoomView = {
   scores: Record<string, number>;
   /** Whether we have already answered the current question. */
   answered: boolean;
+  /** Whether the host has paused the game. */
+  paused: boolean;
 };
 
 export function teamTotals(

@@ -21,7 +21,9 @@ one floats).
   meanings, and explanatory notes on the classic disputed calls.
 - **Solo mode** — the caller speeds up every round, just like real life.
   Timing out counts as staying still: it never earns a point, and it costs
-  one only if the thing actually flew.
+  one only if the thing actually flew. Every mode can be paused (the clock
+  freezes with its remaining time) and quit; online, the host holds the
+  pause and can end the game early with current scores as final.
 - **Teams (pass and play)** — two teams share one device and alternate calls.
 - **Play Online 🌍** — one player hosts a room and gets a 5-letter code;
   friends anywhere on the internet join with it. Free-for-all or two teams,
@@ -30,7 +32,9 @@ one floats).
   brokered through the free public PeerJS cloud, so there is no server to
   deploy. Switching apps, losing signal, or even reloading the page won't
   kick you out — the game reconnects automatically and your seat and score
-  are restored.
+  are restored. This works for the host too: the room itself survives a
+  host refresh. The Play Online screen also lists your recent rooms so you
+  can hop back in with one tap.
 
 ## Run it
 

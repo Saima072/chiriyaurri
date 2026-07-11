@@ -102,8 +102,33 @@ Now:
   and even then the seat stays reserved for the token. Games never stall
   on an away player: rounds still end on the deadline, scoring them as an
   implicit stay.
-- The host is the one seat that can't recover from a reload — the room
-  lives in the host's browser. That's inherent to the serverless design.
+**Room history and host revival.** The Play Online screen lists rooms this
+browser recently hosted or joined (localStorage, 2-hour expiry) with
+one-tap Rejoin/Re-open. A true global room directory would need a server;
+this is deliberately per-device history.
+
+The host seat is recoverable too: because the host's PeerJS id derives
+from the room code, the host snapshots the room (players, tokens, scores,
+deck entry ids, resume round) to localStorage on every state change, and
+a reloaded host browser re-registers the same code and restores it. The
+broker may briefly still hold the old registration, so revival retries
+the same id a few times. Snapshots track a `resumeRoundIndex` that is
+bumped past a round the moment its points are banked — a reload during a
+reveal never double-counts, and a reload mid-question replays the
+uncounted round. Guests ride their normal reconnect loops back into the
+revived room (their retry budget is sized to outlast a host reload).
+
+**Pausing and stopping.** Solo and team games have a Pause button that
+freezes the round clock *with its remaining time* — pausing never grants a
+fresh timer — and hides the prompt while paused, so it can't be used to buy
+thinking time. The pause card offers Resume and Quit (back to setup).
+Online, pausing is the host's power: the host's armed timer (question or
+between-rounds) is frozen and re-armed with the remaining time on resume,
+`pause`/`resume` broadcasts freeze every client's UI and answer buttons,
+answers arriving while paused are ignored, and rejoin `sync` carries the
+paused state. The host's pause card also offers **End game**, which makes
+the current scores final for everyone; guests get **Leave room/game**
+buttons instead.
 
 ## Verification
 
