@@ -30,7 +30,9 @@ one floats).
   brokered through the free public PeerJS cloud, so there is no server to
   deploy. Switching apps, losing signal, or even reloading the page won't
   kick you out — the game reconnects automatically and your seat and score
-  are restored.
+  are restored. This works for the host too: the room itself survives a
+  host refresh. The Play Online screen also lists your recent rooms so you
+  can hop back in with one tap.
 
 ## Run it
 

@@ -9,7 +9,8 @@ import {
 } from './protocol';
 
 const RECONNECT_DELAY_MS = 1500;
-const MAX_RECONNECT_ATTEMPTS = 12;
+// Generous enough to ride out a host reloading and reviving the room.
+const MAX_RECONNECT_ATTEMPTS = 20;
 
 /**
  * A player who joined someone else's room. Renders whatever the host says.
