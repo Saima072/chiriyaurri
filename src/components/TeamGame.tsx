@@ -4,6 +4,7 @@ import FlyStayButtons from './FlyStayButtons';
 import PauseCard from './PauseCard';
 import PromptCard from './PromptCard';
 import { useRoundRunner } from '../game/useRoundRunner';
+import { useBackgroundPause } from '../game/useBackgroundPause';
 import { ROUND_OPTIONS } from '../game/engine';
 import type { RoundOutcome } from '../types';
 
@@ -36,6 +37,7 @@ const TeamRun: React.FC<{
     lastOutcome,
     answer,
   } = useRoundRunner(rounds);
+  useBackgroundPause(phase === 'playing' && !paused, pause);
   const scores = teamScores(outcomes);
 
   if (phase === 'over') {
