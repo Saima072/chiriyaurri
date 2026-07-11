@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Chiriya Urri</string>
+    <string name="title_activity_main">Chiriya Urri</string>
+    <string name="package_name">com.chiriyaurri.app</string>
+    <string name="custom_url_scheme">com.chiriyaurri.app</string>
+</resources>
