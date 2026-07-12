@@ -74,9 +74,10 @@ const App: React.FC = () => {
             <h3>How to play</h3>
             <p>
               The caller shouts “<em>Chiriya urri!</em>” — the sparrow flew! If the thing
-              named can fly, press <strong>Urri</strong>. If it can’t, press{' '}
-              <strong>Nahi Urri</strong> or simply stay still. The caller gets faster and
-              sneakier — watch out for the shutar murgh!
+              named can fly, press <strong>Urri!</strong> (or <strong>Urra!</strong> for
+              muzakkar words — the buttons match the call). If it can’t, press{' '}
+              <strong>Nahi Urri/Urra</strong> or simply stay still. The caller gets faster
+              and sneakier — watch out for the shutar murgh!
             </p>
           </div>
         </div>
