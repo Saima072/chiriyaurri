@@ -65,8 +65,12 @@ const TeamRun: React.FC<{
         <button className="pause-btn" onClick={pause} style={{ visibility: paused ? 'hidden' : 'visible' }}>
           ⏸ Pause
         </button>
+        {/* Compact color-coded scores: full team names would overflow (and
+            truncate a score) on narrow screens; the banner names the teams. */}
         <span>
-          {names[0]} {scores[0]} · {names[1]} {scores[1]}
+          <span className="team-0-text">{scores[0]}</span>
+          {' · '}
+          <span className="team-1-text">{scores[1]}</span>
         </span>
       </div>
       <div className={`turn-banner team-${turn}`}>
@@ -83,7 +87,11 @@ const TeamRun: React.FC<{
       ) : (
         <PromptCard prompt={entry.prompt} outcome={phase === 'reveal' ? lastOutcome : null} />
       )}
-      <FlyStayButtons onAction={answer} disabled={phase !== 'playing' || paused} />
+      <FlyStayButtons
+        prompt={entry.prompt}
+        onAction={answer}
+        disabled={phase !== 'playing' || paused}
+      />
     </div>
   );
 };

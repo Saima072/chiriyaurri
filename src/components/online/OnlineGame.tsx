@@ -339,16 +339,23 @@ const OnlineGame: React.FC<{ onExit: () => void }> = ({ onExit }) => {
           )}
         </PauseCard>
       ) : (
-        <PromptCard prompt={round.prompt} outcome={selfOutcome} />
-      )}
-      {view.phase === 'question' && view.answered && !view.paused ? (
-        <p className="waiting-note">Answer locked in — waiting for the others…</p>
-      ) : (
-        <FlyStayButtons
-          onAction={sendAnswer}
-          disabled={view.phase !== 'question' || view.paused}
+        <PromptCard
+          prompt={round.prompt}
+          outcome={selfOutcome}
+          hint={
+            view.phase === 'question' && view.answered
+              ? 'Locked in — waiting for the others…'
+              : undefined
+          }
         />
       )}
+      {/* Always mounted: swapping these for a note made everything jump. */}
+      <FlyStayButtons
+        prompt={round.prompt}
+        onAction={sendAnswer}
+        disabled={view.phase !== 'question' || view.paused || view.answered}
+      />
+
       <Scoreboard
         lobby={lobby}
         scores={view.scores}

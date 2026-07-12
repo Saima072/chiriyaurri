@@ -60,7 +60,11 @@ const SoloRun: React.FC<{ rounds: number; onDone: () => void }> = ({ rounds, onD
       ) : (
         <PromptCard prompt={entry.prompt} outcome={phase === 'reveal' ? lastOutcome : null} />
       )}
-      <FlyStayButtons onAction={answer} disabled={phase !== 'playing' || paused} />
+      <FlyStayButtons
+        prompt={entry.prompt}
+        onAction={answer}
+        disabled={phase !== 'playing' || paused}
+      />
     </div>
   );
 };
