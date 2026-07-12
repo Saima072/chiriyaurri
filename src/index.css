@@ -29,6 +29,37 @@
   --fill-light: #d29ab5;
 }
 
+/* Glacial Indifference (SIL OFL, see public/fonts/OFL.txt), self-hosted
+   so the native apps render it offline. Fallbacks are fellow geometric
+   sans faces with the same cool, airy feel. */
+@font-face {
+  font-family: 'Glacial Indifference';
+  src:
+    url('/fonts/glacial-indifference-400.woff2') format('woff2'),
+    url('/fonts/glacial-indifference-400.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Glacial Indifference';
+  src:
+    url('/fonts/glacial-indifference-700.woff2') format('woff2'),
+    url('/fonts/glacial-indifference-700.woff') format('woff');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Glacial Indifference';
+  src: url('/fonts/glacial-indifference-400italic.woff2') format('woff2');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -42,7 +73,12 @@ body {
 }
 
 body {
-  font-family: 'Segoe UI', 'Noto Sans', Arial, sans-serif;
+  font-family:
+    'Glacial Indifference',
+    'Century Gothic',
+    Futura,
+    'Segoe UI',
+    sans-serif;
   color: var(--ink);
   background: linear-gradient(180deg, var(--sky-top), var(--sky-bottom));
   min-height: 100vh;
@@ -76,8 +112,8 @@ body {
 
 h1 {
   margin: 0.5rem 0 1rem;
-  /* A serif title reads warm and settled — less playground, more parlor. */
-  font-family: Georgia, 'Times New Roman', serif;
+  font-weight: 700;
+  letter-spacing: 0.02em;
   color: var(--accent);
   font-size: clamp(1.8rem, 5vw, 2.8rem);
   text-shadow: 0 2px 0 rgba(255, 255, 255, 0.5);
@@ -189,6 +225,8 @@ h1 {
 
 /* ── Buttons and inputs ───────────────────────────────────────── */
 button {
+  /* Form elements don't inherit the page font on their own. */
+  font-family: inherit;
   padding: 10px 22px;
   font-size: 1rem;
   border: 2px solid var(--accent);
@@ -235,6 +273,7 @@ button.link {
 }
 
 input {
+  font-family: inherit;
   padding: 10px 12px;
   font-size: 1rem;
   border: 2px solid var(--card-border);

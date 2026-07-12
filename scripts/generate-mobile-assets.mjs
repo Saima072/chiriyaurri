@@ -20,15 +20,23 @@ import { PNG } from 'pngjs';
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const res = (rel) => path.join(REPO, rel);
 
+// The headless browser has no Glacial Indifference installed; embed the
+// app's own woff2 as a data URI so rendered splash text matches the app.
+const fontB64 = fs
+  .readFileSync(path.join(REPO, 'public/fonts/glacial-indifference-700.woff2'))
+  .toString('base64');
+const fontFace = `@font-face{font-family:'Glacial Indifference';font-weight:700;src:url(data:font/woff2;base64,${fontB64}) format('woff2')}`;
+
 async function renderSvgToPng(browser, svgPath, width, height, outPath, transparent = false) {
   const svg = fs.readFileSync(svgPath, 'utf8');
   const page = await browser.newPage({ viewport: { width, height } });
   await page.setContent(
-    `<!doctype html><meta charset="utf-8"><style>
+    `<!doctype html><meta charset="utf-8"><style>${fontFace}
       html,body{margin:0;padding:0;width:${width}px;height:${height}px;overflow:hidden;background:${transparent ? 'transparent' : '#fff'}}
       svg{display:block;width:${width}px;height:${height}px}
     </style>${svg}`
   );
+  await page.evaluate(() => document.fonts.ready);
   fs.mkdirSync(path.dirname(outPath), { recursive: true });
   await page.screenshot({ path: outPath, omitBackground: transparent });
   await page.close();
