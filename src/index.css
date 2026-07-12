@@ -244,9 +244,16 @@ input:focus {
 }
 
 /* ── Prompt card ──────────────────────────────────────────────── */
+/* Fixed height (not min-height): the playing/reveal/paused states show
+   very different amounts of content (a two-line call vs. an emoji plus
+   meaning plus verdict plus note), and a size that tracks content would
+   make the card — and everything below it — visibly shift on every
+   single answer. overflow-y is a safety net for the rare longest-note
+   case on a narrow screen; it should never need to actually scroll. */
 .prompt-card {
   width: 100%;
-  min-height: 170px;
+  height: 230px;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   justify-content: center;
