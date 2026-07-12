@@ -95,17 +95,16 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  /* Vertically center the title + game in the viewport; with min-height
-     (not height) the container grows when content is taller, so nothing
-     ever gets clipped on short screens. */
-  justify-content: center;
+  /* Anchored, not centered: centering on content height made the title
+     and panel jump 20–50px on every screen switch (each screen's panel
+     is a different height). A fixed top offset — placed where the
+     centered menu used to sit — keeps the title and the panel's top
+     edge pinned; only the bottom edge grows or shrinks. */
+  justify-content: flex-start;
   min-height: 100vh;
   padding: 1.5rem 1rem 3rem;
-  /* Clear the notch / home indicator on phones; 0 everywhere else. */
-  padding-top: max(1.5rem, env(safe-area-inset-top));
-  /* Extra bottom padding lifts the visual center: the game sits a touch
-     above true middle, which reads more balanced than dead-center. */
-  padding-bottom: max(calc(3rem + 72px), env(safe-area-inset-bottom));
+  padding-top: max(11vh, env(safe-area-inset-top));
+  padding-bottom: max(3rem, env(safe-area-inset-bottom));
   padding-left: max(1rem, env(safe-area-inset-left));
   padding-right: max(1rem, env(safe-area-inset-right));
 }
@@ -193,6 +192,24 @@ h1 {
   }
 }
 
+/* Respect reduced-motion: clouds park in place, birds (which start
+   off-screen) are hidden, and buttons stop animating. The countdown
+   bar keeps its animation — its motion IS the time information. */
+@media (prefers-reduced-motion: reduce) {
+  .cloud {
+    animation: none;
+    transform: translateX(15vw);
+  }
+
+  .flying-bird {
+    display: none;
+  }
+
+  button {
+    transition: none;
+  }
+}
+
 /* ── Panels ───────────────────────────────────────────────────── */
 .panel {
   position: relative;
@@ -248,9 +265,27 @@ button {
   touch-action: manipulation;
 }
 
-button:hover:not(:disabled) {
-  background: var(--accent-dark);
-  transform: translateY(-1px);
+/* Hover effects only where hover truly exists: on touch screens the
+   browser leaves :hover stuck on whatever was last tapped, so the lift
+   became a phantom 1px shift right as you answered. */
+@media (hover: hover) {
+  button:hover:not(:disabled) {
+    background: var(--accent-dark);
+    transform: translateY(-1px);
+  }
+
+  .btn-stay:hover:not(:disabled) {
+    background: var(--stay-dark);
+  }
+
+  .pause-btn:hover:not(:disabled) {
+    background: var(--pause-dark);
+  }
+}
+
+/* Touch feedback that never moves anything. */
+button:active:not(:disabled) {
+  filter: brightness(0.9);
 }
 
 button:disabled {
@@ -297,17 +332,12 @@ input:focus {
 }
 
 .option-row,
-.join-row,
-.name-inputs {
+.join-row {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
   justify-content: center;
   align-items: center;
-}
-
-.name-inputs input {
-  width: 170px;
 }
 
 .join-row input {
@@ -334,30 +364,6 @@ input:focus {
   overflow: hidden;
   text-overflow: ellipsis;
   min-width: 0;
-}
-
-.turn-banner {
-  width: 100%;
-  padding: 8px;
-  border-radius: 0;
-  font-weight: 600;
-  color: white;
-}
-
-.turn-banner.team-0 {
-  background: var(--team-a);
-}
-
-.turn-banner.team-1 {
-  background: var(--team-b);
-}
-
-.team-0-text {
-  color: var(--team-a);
-}
-
-.team-1-text {
-  color: var(--team-b);
 }
 
 .countdown {
@@ -481,6 +487,58 @@ input:focus {
   }
 }
 
+/* Landscape phones: the portrait layout is ~700px tall, forcing players
+   to scroll mid-round. Compact everything so a full round fits. */
+@media (orientation: landscape) and (max-height: 500px) {
+  .App {
+    padding-top: max(0.75rem, env(safe-area-inset-top));
+    padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+  }
+
+  h1 {
+    font-size: 1.3rem;
+    margin: 0 0 0.4rem;
+  }
+
+  .panel {
+    padding: 0.75rem 1.5rem;
+    gap: 0.5rem;
+  }
+
+  .prompt-card {
+    height: 150px;
+    gap: 0.2rem;
+  }
+
+  .prompt-call {
+    font-size: 1.35rem;
+  }
+
+  .reveal-emoji {
+    font-size: 1.6rem;
+  }
+
+  .reveal-meaning,
+  .reveal-note {
+    font-size: 0.82rem;
+  }
+
+  .btn-fly,
+  .btn-stay {
+    padding: 8px 20px;
+    font-size: 1rem;
+  }
+
+  button.primary {
+    padding: 8px 18px;
+  }
+
+  /* The how-to text doesn't fit a short viewport; the game does. */
+  .rules {
+    display: none;
+  }
+}
+
 /* ── Fly / stay buttons ───────────────────────────────────────── */
 .fly-stay {
   display: flex;
@@ -505,10 +563,6 @@ input:focus {
   border-radius: 12px;
 }
 
-.btn-stay:hover:not(:disabled) {
-  background: var(--stay-dark);
-}
-
 /* "Urra" and "Urri" render at slightly different widths; a fixed slot
    keeps the buttons' geometry identical from round to round. */
 .verb-slot {
@@ -526,10 +580,6 @@ input:focus {
      two lines — that grows the header row and shoves the game down. */
   white-space: nowrap;
   flex-shrink: 0;
-}
-
-.pause-btn:hover:not(:disabled) {
-  background: var(--pause-dark);
 }
 
 .prompt-card.paused {

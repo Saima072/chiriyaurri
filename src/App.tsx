@@ -2,12 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { App as CapacitorApp } from '@capacitor/app';
 import { Capacitor } from '@capacitor/core';
 import SoloGame from './components/SoloGame';
-import TeamGame from './components/TeamGame';
 import OnlineGame from './components/online/OnlineGame';
 import { latestActiveRoom } from './multiplayer/history';
 import { ads } from './ads';
 
-type Mode = 'menu' | 'solo' | 'teams' | 'online';
+type Mode = 'menu' | 'solo' | 'fast' | 'online';
 
 const BIRDS = ['🐦', '🕊️', '🦅', '🦜', '🦋', '🪁'];
 
@@ -85,8 +84,8 @@ const App: React.FC = () => {
           <button className="primary" onClick={() => setMode('solo')}>
             🎯 Solo
           </button>
-          <button className="primary" onClick={() => setMode('teams')}>
-            👥 Teams (one device)
+          <button className="primary" onClick={() => setMode('fast')}>
+            ⚡ Fast
           </button>
           <button className="primary" onClick={() => setMode('online')}>
             🌍 Play Online
@@ -114,7 +113,7 @@ const App: React.FC = () => {
         </div>
       )}
       {mode === 'solo' && <SoloGame onExit={backToMenu} />}
-      {mode === 'teams' && <TeamGame onExit={backToMenu} />}
+      {mode === 'fast' && <SoloGame speed="fast" onExit={backToMenu} />}
       {mode === 'online' && <OnlineGame onExit={backToMenu} />}
     </div>
   );

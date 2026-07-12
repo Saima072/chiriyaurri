@@ -1,17 +1,30 @@
 import type { Action, RoundOutcome, UrriEntry } from '../types';
 import { answers } from '../data/answers';
 
-export const REVEAL_MS = 1800;
 export const ROUND_OPTIONS = [10, 15, 20] as const;
 
-const FIRST_ROUND_MS = 5000;
-const LAST_ROUND_MS = 2200;
+/** Two pacings: classic gives you time to think; fast is rapid-fire —
+ *  the caller starts quick and only gets quicker. */
+export type Speed = 'classic' | 'fast';
+
+export const SPEEDS: Record<Speed, { first: number; last: number; revealMs: number }> = {
+  classic: { first: 5000, last: 2200, revealMs: 1800 },
+  fast: { first: 2600, last: 1100, revealMs: 900 },
+};
+
+/** Online games always run classic pacing (network latency needs slack). */
+export const REVEAL_MS = SPEEDS.classic.revealMs;
 
 /** The caller speeds up: round time shrinks linearly over the game. */
-export function roundDuration(round: number, totalRounds: number): number {
-  if (totalRounds <= 1) return FIRST_ROUND_MS;
+export function roundDuration(
+  round: number,
+  totalRounds: number,
+  speed: Speed = 'classic'
+): number {
+  const { first, last } = SPEEDS[speed];
+  if (totalRounds <= 1) return first;
   const t = round / (totalRounds - 1);
-  return Math.round(FIRST_ROUND_MS + (LAST_ROUND_MS - FIRST_ROUND_MS) * t);
+  return Math.round(first + (last - first) * t);
 }
 
 export function shuffle<T>(items: readonly T[]): T[] {
