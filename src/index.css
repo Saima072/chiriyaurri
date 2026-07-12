@@ -1,32 +1,63 @@
-/* Calm palette: desaturated misty blue + warm ivory + sage. Saturation is
-   what makes UIs feel tense, so every hue here is muted; red (an alarm
-   cue) is replaced by dusty rose. All text/background pairs below were
-   verified against WCAG AA (≥4.5:1) so soft never becomes illegible. */
+/* Cozy palette: maroon, chocolate, deep pink, and purple over warm
+   parchment — an autumn-evening coffee-house feel rather than a candy
+   one. Rich darks on cream keep contrast effortless; every
+   text/background pair below was verified against WCAG AA (≥4.5:1). */
 :root {
-  --sky-top: #dbeaf0; /* misty morning blue */
-  --sky-bottom: #f6f3ea; /* warm ivory */
-  --ink: #3f4e57; /* soft slate — never pure black */
-  --muted: #5c6f7a; /* hints and secondary text */
-  --accent: #4d7690; /* dusty blue */
-  --accent-dark: #456e88;
-  --good: #437054; /* sage, text-grade */
-  --good-border: #9dc3a8;
-  --good-soft: #edf4ee;
-  --bad: #96595f; /* dusty rose, text-grade — not alarm red */
-  --bad-border: #d0a7ac;
-  --bad-soft: #f7efef;
-  --team-a: #4d7690;
-  --team-b: #8a6f4d; /* soft clay */
-  --stay: #87735f; /* warm taupe */
-  --stay-dark: #6f5e4e;
-  --pause: #5d7684;
-  --pause-dark: #4e6572;
-  --card: #fbfaf5; /* warm white, no glare */
-  --card-border: #dfe7e2;
-  --track: #e9f1ec;
-  --divider: #d8e2dd;
-  --sage-fill: #5f9471; /* countdown bar */
-  --sage-fill-light: #a3c7ad;
+  --sky-top: #f3e9dc; /* warm parchment */
+  --sky-bottom: #e8d9c6; /* deeper cream */
+  --ink: #3b2a23; /* espresso */
+  --muted: #6f5c52; /* mocha, hints and secondary text */
+  --accent: #7c3141; /* maroon — primary actions */
+  --accent-dark: #672936;
+  --good: #6a4f8a; /* plum purple, text-grade */
+  --good-border: #c3b2d6;
+  --good-soft: #f2edf6;
+  --bad: #8a3644; /* deep maroon-rose, text-grade */
+  --bad-border: #ddadb4;
+  --bad-soft: #f8ecec;
+  --team-a: #6a4f8a; /* purple */
+  --team-b: #a13d66; /* deep pink */
+  --stay: #6b4a3a; /* chocolate */
+  --stay-dark: #57392c;
+  --pause: #6f5a50;
+  --pause-dark: #5b4a41;
+  --card: #fdf9f3; /* warm paper */
+  --card-border: #e6d8c8;
+  --track: #eadfd2;
+  --divider: #ddcdbc;
+  --fill: #a13d66; /* countdown bar: deep pink */
+  --fill-light: #d29ab5;
+}
+
+/* Glacial Indifference (SIL OFL, see public/fonts/OFL.txt), self-hosted
+   so the native apps render it offline. Fallbacks are fellow geometric
+   sans faces with the same cool, airy feel. */
+@font-face {
+  font-family: 'Glacial Indifference';
+  src:
+    url('/fonts/glacial-indifference-400.woff2') format('woff2'),
+    url('/fonts/glacial-indifference-400.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Glacial Indifference';
+  src:
+    url('/fonts/glacial-indifference-700.woff2') format('woff2'),
+    url('/fonts/glacial-indifference-700.woff') format('woff');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Glacial Indifference';
+  src: url('/fonts/glacial-indifference-400italic.woff2') format('woff2');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
 }
 
 * {
@@ -42,7 +73,12 @@ body {
 }
 
 body {
-  font-family: 'Segoe UI', 'Noto Sans', Arial, sans-serif;
+  font-family:
+    'Glacial Indifference',
+    'Century Gothic',
+    Futura,
+    'Segoe UI',
+    sans-serif;
   color: var(--ink);
   background: linear-gradient(180deg, var(--sky-top), var(--sky-bottom));
   min-height: 100vh;
@@ -76,17 +112,62 @@ body {
 
 h1 {
   margin: 0.5rem 0 1rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--accent);
   font-size: clamp(1.8rem, 5vw, 2.8rem);
-  text-shadow: 0 2px 0 rgba(255, 255, 255, 0.7);
+  text-shadow: 0 2px 0 rgba(255, 255, 255, 0.5);
 }
 
-/* ── Background birds ─────────────────────────────────────────── */
+/* ── Background sky: drifting clouds + the odd bird ───────────── */
 .sky {
   position: fixed;
   inset: 0;
   pointer-events: none;
   overflow: hidden;
   z-index: 0;
+}
+
+/* Soft cloud: a blurred pill with two round lumps, drifting slowly. */
+.cloud {
+  position: absolute;
+  left: 0;
+  background: rgba(255, 252, 246, 0.85);
+  border-radius: 999px;
+  filter: blur(5px);
+  opacity: 0.55;
+  animation: cloud-drift linear infinite;
+}
+
+.cloud::before,
+.cloud::after {
+  content: '';
+  position: absolute;
+  background: inherit;
+  border-radius: 50%;
+}
+
+.cloud::before {
+  width: 55%;
+  height: 170%;
+  top: -70%;
+  left: 14%;
+}
+
+.cloud::after {
+  width: 38%;
+  height: 120%;
+  top: -40%;
+  right: 14%;
+}
+
+@keyframes cloud-drift {
+  from {
+    transform: translateX(-30vw);
+  }
+  to {
+    transform: translateX(130vw);
+  }
 }
 
 .flying-bird {
@@ -114,9 +195,11 @@ h1 {
   position: relative;
   z-index: 1;
   width: min(560px, 100%);
-  background: rgba(253, 252, 247, 0.92);
-  border-radius: 16px;
-  box-shadow: 0 6px 20px rgba(63, 78, 87, 0.1);
+  background: rgba(253, 249, 243, 0.94);
+  /* Square corners: crisp edges read grown-up; warmth comes from color
+     and light instead. The soft, wide shadow lifts it off the page. */
+  border-radius: 0;
+  box-shadow: 0 18px 40px rgba(59, 42, 35, 0.16);
   padding: 1.5rem;
   display: flex;
   flex-direction: column;
@@ -142,13 +225,17 @@ h1 {
 
 /* ── Buttons and inputs ───────────────────────────────────────── */
 button {
+  /* Form elements don't inherit the page font on their own. */
+  font-family: inherit;
   padding: 10px 22px;
   font-size: 1rem;
   border: 2px solid var(--accent);
   background: var(--accent);
   color: white;
   cursor: pointer;
-  border-radius: 8px;
+  /* Corners are square by default; rounding is reserved for the few
+     buttons that matter (primary actions and Fly/Stay). */
+  border-radius: 0;
   transition:
     transform 0.15s ease,
     background 0.15s ease;
@@ -169,6 +256,7 @@ button:disabled {
 button.primary {
   width: min(300px, 100%);
   font-weight: 600;
+  border-radius: 10px;
 }
 
 button.selected {
@@ -185,10 +273,12 @@ button.link {
 }
 
 input {
+  font-family: inherit;
   padding: 10px 12px;
   font-size: 1rem;
   border: 2px solid var(--card-border);
-  border-radius: 8px;
+  border-radius: 0;
+  background: var(--card);
   text-align: center;
   width: min(260px, 100%);
   /* Inputs are the one place typing/selection should still work. */
@@ -244,7 +334,7 @@ input:focus {
 .turn-banner {
   width: 100%;
   padding: 8px;
-  border-radius: 8px;
+  border-radius: 0;
   font-weight: 600;
   color: white;
 }
@@ -269,7 +359,7 @@ input:focus {
   width: 100%;
   height: 10px;
   background: var(--track);
-  border-radius: 5px;
+  border-radius: 0;
   overflow: hidden;
 }
 
@@ -277,7 +367,7 @@ input:focus {
   height: 100%;
   /* Deliberately NOT a green→red urgency ramp: the shrinking width
      already tells you the time; the color never shouts about it. */
-  background: linear-gradient(90deg, var(--sage-fill), var(--sage-fill-light));
+  background: linear-gradient(90deg, var(--fill), var(--fill-light));
   animation: shrink linear forwards;
 }
 
@@ -307,8 +397,12 @@ input:focus {
   align-items: center;
   gap: 0.35rem;
   background: var(--card);
-  border: 2px solid var(--card-border);
-  border-radius: 12px;
+  border: 1px solid var(--card-border);
+  border-radius: 0;
+  /* A light, wide drop shadow floats the card "in air" above the panel. */
+  box-shadow:
+    0 14px 28px rgba(59, 42, 35, 0.14),
+    0 4px 10px rgba(59, 42, 35, 0.08);
   padding: 1rem;
 }
 
@@ -395,6 +489,7 @@ input:focus {
   border-color: var(--accent);
   font-size: 1.15rem;
   padding: 14px 26px;
+  border-radius: 12px;
 }
 
 .btn-stay {
@@ -402,6 +497,7 @@ input:focus {
   border-color: var(--stay);
   font-size: 1.15rem;
   padding: 14px 26px;
+  border-radius: 12px;
 }
 
 .btn-stay:hover:not(:disabled) {
@@ -494,7 +590,8 @@ input:focus {
   align-items: center;
   gap: 0.6rem;
   background: var(--card);
-  border-radius: 8px;
+  border-radius: 0;
+  border: 1px solid var(--card-border);
   padding: 6px 10px;
   margin-bottom: 4px;
 }
@@ -540,7 +637,8 @@ input:focus {
   align-items: center;
   gap: 0.6rem;
   background: var(--card);
-  border-radius: 8px;
+  border-radius: 0;
+  border: 1px solid var(--card-border);
   padding: 6px 12px;
 }
 
@@ -571,7 +669,7 @@ input:focus {
   display: inline-block;
   min-width: 1.4em;
   margin-right: 6px;
-  border-radius: 6px;
+  border-radius: 2px;
   color: white;
   font-size: 0.8rem;
   padding: 1px 5px;
