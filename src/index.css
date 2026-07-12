@@ -40,6 +40,10 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
+  /* Vertically center the title + game in the viewport; with min-height
+     (not height) the container grows when content is taller, so nothing
+     ever gets clipped on short screens. */
+  justify-content: center;
   min-height: 100vh;
   padding: 1.5rem 1rem 3rem;
   /* Clear the notch / home indicator on phones; 0 everywhere else. */
