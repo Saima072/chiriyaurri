@@ -47,8 +47,8 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
-	<!-- OWNER ACTION (docs/STORE_CHECKLIST.md): replace with YOUR AdMob
-	     iOS App ID (ca-app-pub-XXXX~YYYY) before release. This is Google's
+	<!-- OWNER ACTION: replace with YOUR AdMob iOS App ID
+	     (ca-app-pub-XXXX~YYYY) before release. This is Google's
 	     published sample ID. -->
 	<key>GADApplicationIdentifier</key>
 	<string>ca-app-pub-3940256099942544~1458002511</string>

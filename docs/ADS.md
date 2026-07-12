@@ -5,7 +5,8 @@ Status: **scaffolding implemented, ads OFF by default.** The consent flow
 frequency cap, the game-over hooks, and the native config entries all
 exist — gated behind `ADS_ENABLED = false` in `src/ads/config.ts` with
 Google's test IDs as placeholders. Turning ads on is console/account work
-only: see **docs/STORE_CHECKLIST.md** for the strict owner to-do list.
+only (AdMob account, app registrations, real IDs, GDPR message setup, and
+updated store privacy declarations — the owner keeps that checklist).
 
 ## The platform answer, up front
 

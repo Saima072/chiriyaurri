@@ -1,11 +1,12 @@
 // ─── Ads configuration ──────────────────────────────────────────────
-// Everything an owner must touch before shipping ads lives in this file
-// (plus the two native config entries listed in docs/STORE_CHECKLIST.md).
+// Everything an owner must touch before shipping ads lives in this file,
+// plus the AdMob App IDs in AndroidManifest.xml and Info.plist.
 
 /**
  * Master switch. While false, the ads module never initializes the AdMob
  * SDK, never runs the consent flow, and never shows anything — on any
- * platform. Flip to true only after completing docs/STORE_CHECKLIST.md.
+ * platform. Flip to true only after replacing the placeholder IDs here
+ * and in both native configs with real ones from your AdMob console.
  */
 export const ADS_ENABLED = false;
 

@@ -19,8 +19,8 @@ import {
  *      load an ad — consent failure means the game simply runs ad-free
  *
  * The UMP form itself is configured in the AdMob console under
- * Privacy & messaging (see docs/STORE_CHECKLIST.md) — without that
- * console setup, no form exists to show and EEA users get no ads.
+ * Privacy & messaging — without that console setup, no form exists to
+ * show and EEA users get no ads.
  */
 export class AdMobBackend implements AdsBackend {
   private canRequestAds = false;
