@@ -13,14 +13,28 @@ const BIRDS = ['🐦', '🕊️', '🦅', '🦜', '🦋', '🪁'];
 
 const Sky: React.FC = () => (
   <div className="sky" aria-hidden="true">
-    {Array.from({ length: 10 }).map((_, i) => (
+    {/* Slow clouds; negative delays scatter them mid-sky from the start. */}
+    {Array.from({ length: 5 }).map((_, i) => (
+      <div
+        key={`cloud-${i}`}
+        className="cloud"
+        style={{
+          top: `${6 + i * 13}%`,
+          width: `${110 + (i % 3) * 60}px`,
+          height: `${26 + (i % 3) * 12}px`,
+          animationDelay: `${-i * 27}s`,
+          animationDuration: `${90 + i * 20}s`,
+        }}
+      />
+    ))}
+    {Array.from({ length: 6 }).map((_, i) => (
       <span
-        key={i}
+        key={`bird-${i}`}
         className="flying-bird"
         style={{
           top: `${(i * 37 + 5) % 90}%`,
-          animationDelay: `${i * 1.9}s`,
-          animationDuration: `${16 + (i % 5) * 6}s`,
+          animationDelay: `${i * 3.1}s`,
+          animationDuration: `${18 + (i % 5) * 6}s`,
           fontSize: `${16 + ((i * 7) % 22)}px`,
         }}
       >
