@@ -199,9 +199,20 @@ input:focus {
 .round-meta {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   width: 100%;
   font-weight: 600;
+  font-size: 0.95rem;
   color: #46607a;
+}
+
+/* A widening score ("Score: 9" → "Score: 10") must never wrap this row —
+   its height change would shove the card and buttons down mid-answer. */
+.round-meta > span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .turn-banner {
@@ -218,6 +229,14 @@ input:focus {
 
 .turn-banner.team-1 {
   background: var(--team-b);
+}
+
+.team-0-text {
+  color: var(--team-a);
+}
+
+.team-1-text {
+  color: var(--team-b);
 }
 
 .countdown {
@@ -311,6 +330,30 @@ input:focus {
   color: #6d8aa3;
 }
 
+/* Small phones: tighten the reveal so even the longest note (pani ka
+   jahaz) fits inside the card's fixed height without inner scrolling. */
+@media (max-width: 360px) {
+  .prompt-card {
+    gap: 0.25rem;
+  }
+
+  .prompt-call {
+    font-size: clamp(1.35rem, 6vw, 2.4rem);
+  }
+
+  .reveal-emoji {
+    font-size: 2.2rem;
+  }
+
+  .reveal-meaning {
+    font-size: 0.9rem;
+  }
+
+  .reveal-note {
+    font-size: 0.8rem;
+  }
+}
+
 /* ── Fly / stay buttons ───────────────────────────────────────── */
 .fly-stay {
   display: flex;
@@ -337,11 +380,23 @@ input:focus {
   background: #5f4e3f;
 }
 
+/* "Urra" and "Urri" render at slightly different widths; a fixed slot
+   keeps the buttons' geometry identical from round to round. */
+.verb-slot {
+  display: inline-block;
+  min-width: 2.4em;
+  text-align: center;
+}
+
 .pause-btn {
   padding: 4px 12px;
   font-size: 0.85rem;
   background: #7a8ea0;
   border-color: #7a8ea0;
+  /* Never let width pressure from a widening score wrap this label onto
+     two lines — that grows the header row and shoves the game down. */
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .pause-btn:hover:not(:disabled) {

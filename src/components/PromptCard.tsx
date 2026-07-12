@@ -5,14 +5,17 @@ type PromptCardProps = {
   prompt: string;
   /** When set, the round is over and we show the reveal instead of the call. */
   outcome?: RoundOutcome | null;
+  /** Replaces the "Does it fly?" line (e.g. "Waiting for the others…")
+   *  in place, so status changes never move the layout. */
+  hint?: string;
 };
 
-const PromptCard: React.FC<PromptCardProps> = ({ prompt, outcome }) => {
+const PromptCard: React.FC<PromptCardProps> = ({ prompt, outcome, hint }) => {
   if (!outcome) {
     return (
       <div className="prompt-card">
         <div className="prompt-call">{prompt}</div>
-        <div className="prompt-hint">Does it fly?</div>
+        <div className="prompt-hint">{hint ?? 'Does it fly?'}</div>
       </div>
     );
   }

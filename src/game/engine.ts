@@ -28,6 +28,15 @@ export function buildDeck(rounds: number): UrriEntry[] {
   return shuffle(answers).slice(0, Math.min(rounds, answers.length));
 }
 
+/**
+ * Urdu gender agreement, read off the call itself: muzakkar (masculine)
+ * calls end in "Urra", mo'annas (feminine) calls end in "Urri". Answer
+ * buttons must echo the same form — "Kawwa Urra!" is answered "Urra!".
+ */
+export function urriVerb(prompt: string): 'Urra' | 'Urri' {
+  return prompt.trim().endsWith('Urra') ? 'Urra' : 'Urri';
+}
+
 export function totalPoints(outcomes: RoundOutcome[]): number {
   return outcomes.reduce((sum, o) => sum + o.points, 0);
 }
