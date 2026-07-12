@@ -5,6 +5,7 @@ import SoloGame from './components/SoloGame';
 import TeamGame from './components/TeamGame';
 import OnlineGame from './components/online/OnlineGame';
 import { latestActiveRoom } from './multiplayer/history';
+import { ads } from './ads';
 
 type Mode = 'menu' | 'solo' | 'teams' | 'online';
 
@@ -33,6 +34,12 @@ const App: React.FC = () => {
   // A reload mid-game should land back in the room, not on the menu.
   const [mode, setMode] = useState<Mode>(() => (latestActiveRoom() ? 'online' : 'menu'));
   const backToMenu = () => setMode('menu');
+
+  // Consent (UMP/ATT) runs before any ad could ever load; a no-op on the
+  // web and whenever ADS_ENABLED is false. See src/ads/ and docs/ADS.md.
+  useEffect(() => {
+    void ads.init();
+  }, []);
 
   // Android's hardware/gesture back button: step back to the menu first,
   // only exit the app from there — otherwise it would quit mid-game.
@@ -79,6 +86,16 @@ const App: React.FC = () => {
               <strong>Nahi Urri/Urra</strong> or simply stay still. The caller gets faster
               and sneakier — watch out for the shutar murgh!
             </p>
+          </div>
+          <div className="privacy-links">
+            <a href="./privacy.html" target="_blank" rel="noreferrer">
+              Privacy Policy
+            </a>
+            {ads.privacyOptionsRequired() && (
+              <button className="link" onClick={() => ads.showPrivacyOptions()}>
+                Privacy options
+              </button>
+            )}
           </div>
         </div>
       )}

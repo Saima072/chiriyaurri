@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import CountdownBar from './CountdownBar';
 import FlyStayButtons from './FlyStayButtons';
 import PauseCard from './PauseCard';
@@ -6,6 +6,7 @@ import PromptCard from './PromptCard';
 import { useRoundRunner } from '../game/useRoundRunner';
 import { useBackgroundPause } from '../game/useBackgroundPause';
 import { bestStreak, totalPoints, ROUND_OPTIONS } from '../game/engine';
+import { ads } from '../ads';
 
 const SoloRun: React.FC<{ rounds: number; onDone: () => void }> = ({ rounds, onDone }) => {
   const {
@@ -22,6 +23,11 @@ const SoloRun: React.FC<{ rounds: number; onDone: () => void }> = ({ rounds, onD
     answer,
   } = useRoundRunner(rounds);
   useBackgroundPause(phase === 'playing' && !paused, pause);
+
+  // Interstitials (when enabled) belong strictly between games.
+  useEffect(() => {
+    if (phase === 'over') ads.gameFinished();
+  }, [phase]);
 
   if (phase === 'over') {
     const score = totalPoints(outcomes);

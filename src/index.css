@@ -436,6 +436,23 @@ input:focus {
   font-size: 1.2rem;
 }
 
+.privacy-links {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  align-items: center;
+  font-size: 0.85rem;
+}
+
+.privacy-links a {
+  color: #6d8aa3;
+}
+
+.privacy-links .link {
+  font-size: 0.85rem;
+  color: #6d8aa3;
+}
+
 /* ── Recent rooms ─────────────────────────────────────────────── */
 .recent-rooms {
   width: 100%;

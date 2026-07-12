@@ -1,8 +1,11 @@
 # Ads plan (AdMob)
 
-Status: **plan only — nothing implemented yet.** This documents the agreed
-placement rules, the platform picture, and the step-by-step integration
-path so implementation is a mechanical follow-through.
+Status: **scaffolding implemented, ads OFF by default.** The consent flow
+(GDPR/UMP + iOS ATT), the ads facade (`src/ads/`), the interstitial
+frequency cap, the game-over hooks, and the native config entries all
+exist — gated behind `ADS_ENABLED = false` in `src/ads/config.ts` with
+Google's test IDs as placeholders. Turning ads on is console/account work
+only: see **docs/STORE_CHECKLIST.md** for the strict owner to-do list.
 
 ## The platform answer, up front
 

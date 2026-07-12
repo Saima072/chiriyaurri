@@ -24,6 +24,14 @@
 
         </activity>
 
+        <!-- OWNER ACTION (docs/STORE_CHECKLIST.md): replace with YOUR AdMob
+             Android App ID (ca-app-pub-XXXX~YYYY) before release. This is
+             Google's published sample ID; without a valid value here the
+             app crashes at launch once the ads SDK is included. -->
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-3940256099942544~3347511713" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
