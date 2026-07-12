@@ -20,7 +20,7 @@ const Sky: React.FC = () => (
         style={{
           top: `${(i * 37 + 5) % 90}%`,
           animationDelay: `${i * 1.9}s`,
-          animationDuration: `${10 + (i % 5) * 4}s`,
+          animationDuration: `${16 + (i % 5) * 6}s`,
           fontSize: `${16 + ((i * 7) % 22)}px`,
         }}
       >

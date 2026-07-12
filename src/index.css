@@ -1,13 +1,32 @@
+/* Calm palette: desaturated misty blue + warm ivory + sage. Saturation is
+   what makes UIs feel tense, so every hue here is muted; red (an alarm
+   cue) is replaced by dusty rose. All text/background pairs below were
+   verified against WCAG AA (≥4.5:1) so soft never becomes illegible. */
 :root {
-  --sky-top: #aee3f7;
-  --sky-bottom: #f3fbff;
-  --ink: #21384a;
-  --accent: #2f89c5;
-  --accent-dark: #226a9b;
-  --good: #2e9e5b;
-  --bad: #d1495b;
-  --team-a: #2f89c5;
-  --team-b: #d97b29;
+  --sky-top: #dbeaf0; /* misty morning blue */
+  --sky-bottom: #f6f3ea; /* warm ivory */
+  --ink: #3f4e57; /* soft slate — never pure black */
+  --muted: #5c6f7a; /* hints and secondary text */
+  --accent: #4d7690; /* dusty blue */
+  --accent-dark: #456e88;
+  --good: #437054; /* sage, text-grade */
+  --good-border: #9dc3a8;
+  --good-soft: #edf4ee;
+  --bad: #96595f; /* dusty rose, text-grade — not alarm red */
+  --bad-border: #d0a7ac;
+  --bad-soft: #f7efef;
+  --team-a: #4d7690;
+  --team-b: #8a6f4d; /* soft clay */
+  --stay: #87735f; /* warm taupe */
+  --stay-dark: #6f5e4e;
+  --pause: #5d7684;
+  --pause-dark: #4e6572;
+  --card: #fbfaf5; /* warm white, no glare */
+  --card-border: #dfe7e2;
+  --track: #e9f1ec;
+  --divider: #d8e2dd;
+  --sage-fill: #5f9471; /* countdown bar */
+  --sage-fill-light: #a3c7ad;
 }
 
 * {
@@ -48,7 +67,9 @@ body {
   padding: 1.5rem 1rem 3rem;
   /* Clear the notch / home indicator on phones; 0 everywhere else. */
   padding-top: max(1.5rem, env(safe-area-inset-top));
-  padding-bottom: max(3rem, env(safe-area-inset-bottom));
+  /* Extra bottom padding lifts the visual center: the game sits a touch
+     above true middle, which reads more balanced than dead-center. */
+  padding-bottom: max(calc(3rem + 72px), env(safe-area-inset-bottom));
   padding-left: max(1rem, env(safe-area-inset-left));
   padding-right: max(1rem, env(safe-area-inset-right));
 }
@@ -71,7 +92,8 @@ h1 {
 .flying-bird {
   position: absolute;
   left: -60px;
-  opacity: 0.5;
+  /* Faint and unhurried — ambience, not motion that demands attention. */
+  opacity: 0.3;
   animation: fly-across linear infinite;
 }
 
@@ -92,9 +114,9 @@ h1 {
   position: relative;
   z-index: 1;
   width: min(560px, 100%);
-  background: rgba(255, 255, 255, 0.92);
+  background: rgba(253, 252, 247, 0.92);
   border-radius: 16px;
-  box-shadow: 0 8px 24px rgba(33, 56, 74, 0.15);
+  box-shadow: 0 6px 20px rgba(63, 78, 87, 0.1);
   padding: 1.5rem;
   display: flex;
   flex-direction: column;
@@ -108,10 +130,10 @@ h1 {
 }
 
 .rules {
-  border-top: 1px dashed #c3d8e6;
+  border-top: 1px dashed var(--divider);
   padding-top: 0.5rem;
   font-size: 0.92rem;
-  color: #46607a;
+  color: var(--muted);
 }
 
 .rules h3 {
@@ -165,7 +187,7 @@ button.link {
 input {
   padding: 10px 12px;
   font-size: 1rem;
-  border: 2px solid #b8d4e6;
+  border: 2px solid var(--card-border);
   border-radius: 8px;
   text-align: center;
   width: min(260px, 100%);
@@ -207,7 +229,7 @@ input:focus {
   width: 100%;
   font-weight: 600;
   font-size: 0.95rem;
-  color: #46607a;
+  color: var(--muted);
 }
 
 /* A widening score ("Score: 9" → "Score: 10") must never wrap this row —
@@ -246,14 +268,16 @@ input:focus {
 .countdown {
   width: 100%;
   height: 10px;
-  background: #dcebf5;
+  background: var(--track);
   border-radius: 5px;
   overflow: hidden;
 }
 
 .countdown-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--good), #e3b62c, var(--bad));
+  /* Deliberately NOT a green→red urgency ramp: the shrinking width
+     already tells you the time; the color never shouts about it. */
+  background: linear-gradient(90deg, var(--sage-fill), var(--sage-fill-light));
   animation: shrink linear forwards;
 }
 
@@ -282,8 +306,8 @@ input:focus {
   justify-content: center;
   align-items: center;
   gap: 0.35rem;
-  background: #f4fafe;
-  border: 2px solid #cfe5f2;
+  background: var(--card);
+  border: 2px solid var(--card-border);
   border-radius: 12px;
   padding: 1rem;
 }
@@ -294,17 +318,17 @@ input:focus {
 }
 
 .prompt-hint {
-  color: #6d8aa3;
+  color: var(--muted);
 }
 
 .prompt-card.reveal.good {
-  border-color: var(--good);
-  background: #eefaf2;
+  border-color: var(--good-border);
+  background: var(--good-soft);
 }
 
 .prompt-card.reveal.bad {
-  border-color: var(--bad);
-  background: #fdf0f2;
+  border-color: var(--bad-border);
+  background: var(--bad-soft);
 }
 
 .reveal-emoji {
@@ -313,7 +337,7 @@ input:focus {
 }
 
 .reveal-meaning {
-  color: #46607a;
+  color: var(--muted);
 }
 
 .reveal-verdict {
@@ -331,7 +355,7 @@ input:focus {
 .reveal-note {
   font-size: 0.88rem;
   font-style: italic;
-  color: #6d8aa3;
+  color: var(--muted);
 }
 
 /* Small phones: tighten the reveal so even the longest note (pani ka
@@ -374,14 +398,14 @@ input:focus {
 }
 
 .btn-stay {
-  background: #7a6552;
-  border-color: #7a6552;
+  background: var(--stay);
+  border-color: var(--stay);
   font-size: 1.15rem;
   padding: 14px 26px;
 }
 
 .btn-stay:hover:not(:disabled) {
-  background: #5f4e3f;
+  background: var(--stay-dark);
 }
 
 /* "Urra" and "Urri" render at slightly different widths; a fixed slot
@@ -395,8 +419,8 @@ input:focus {
 .pause-btn {
   padding: 4px 12px;
   font-size: 0.85rem;
-  background: #7a8ea0;
-  border-color: #7a8ea0;
+  background: var(--pause);
+  border-color: var(--pause);
   /* Never let width pressure from a widening score wrap this label onto
      two lines — that grows the header row and shoves the game down. */
   white-space: nowrap;
@@ -404,7 +428,7 @@ input:focus {
 }
 
 .pause-btn:hover:not(:disabled) {
-  background: #62778a;
+  background: var(--pause-dark);
 }
 
 .prompt-card.paused {
@@ -420,7 +444,7 @@ input:focus {
 }
 
 .waiting-note {
-  color: #6d8aa3;
+  color: var(--muted);
   font-style: italic;
   margin: 0.5rem 0;
 }
@@ -445,31 +469,31 @@ input:focus {
 }
 
 .privacy-links a {
-  color: #6d8aa3;
+  color: var(--muted);
 }
 
 .privacy-links .link {
   font-size: 0.85rem;
-  color: #6d8aa3;
+  color: var(--muted);
 }
 
 /* ── Recent rooms ─────────────────────────────────────────────── */
 .recent-rooms {
   width: 100%;
-  border-top: 1px dashed #c3d8e6;
+  border-top: 1px dashed var(--divider);
   padding-top: 0.5rem;
 }
 
 .recent-rooms h3 {
   margin: 0.2rem 0 0.5rem;
-  color: #46607a;
+  color: var(--muted);
 }
 
 .room-row {
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  background: #f4fafe;
+  background: var(--card);
   border-radius: 8px;
   padding: 6px 10px;
   margin-bottom: 4px;
@@ -483,7 +507,7 @@ input:focus {
 .room-sub {
   flex: 1;
   text-align: left;
-  color: #6d8aa3;
+  color: var(--muted);
   font-size: 0.88rem;
 }
 
@@ -494,7 +518,7 @@ input:focus {
 
 .room-remove {
   text-decoration: none;
-  color: #6d8aa3;
+  color: var(--muted);
 }
 
 /* ── Scoreboard ───────────────────────────────────────────────── */
@@ -515,7 +539,7 @@ input:focus {
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  background: #f4fafe;
+  background: var(--card);
   border-radius: 8px;
   padding: 6px 12px;
 }
