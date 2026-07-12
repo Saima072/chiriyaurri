@@ -66,6 +66,10 @@ VITE_PEER_HOST=peers.example.com VITE_PEER_PORT=443 \
 VITE_PEER_PATH=/peer VITE_PEER_SECURE=true npm run build
 ```
 
+Also add your PeerServer's origin to the Content-Security-Policy
+`connect-src` list in `vite.config.ts` — production builds only allow
+connections to the public PeerJS broker by default.
+
 ## How the code is laid out
 
 | Path | What it is |

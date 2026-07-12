@@ -24,6 +24,9 @@ const MAX_CODE_RETRIES = 3;
 /** Reviving a room retries the SAME code — the broker needs a moment to free it. */
 const REVIVE_RETRY_DELAY_MS = 1500;
 const MAX_REVIVE_RETRIES = 4;
+/** Hard cap so a stranger with the code can't flood the lobby with fake
+ *  players and exhaust the host's memory and everyone's UI. */
+const MAX_PLAYERS = 12;
 
 function deckFromIds(ids: string[]): UrriEntry[] {
   const byId = new Map(answers.map((e) => [e.id, e]));
@@ -194,6 +197,12 @@ export class HostSession {
         const existing = this.players.find((p) => p.id === requested);
         if (!existing && this.started) {
           this.sendTo(conn, { type: 'rejected', reason: 'The game has already started.' });
+          setTimeout(() => conn.close(), 500);
+          return;
+        }
+        // Rejoins reclaim their seat even in a full room; only NEW seats count.
+        if (!existing && this.players.length >= MAX_PLAYERS) {
+          this.sendTo(conn, { type: 'rejected', reason: 'This room is full.' });
           setTimeout(() => conn.close(), 500);
           return;
         }

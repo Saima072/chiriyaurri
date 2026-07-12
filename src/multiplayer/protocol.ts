@@ -2,8 +2,10 @@ import type { Action, TeamId, UrriEntry } from '../types';
 
 // ── Room codes ─────────────────────────────────────────────────────
 // Short codes players read out loud, so skip lookalikes (0/O, 1/I/L).
+// Six characters ≈ 887M combinations — small enough to say on a call,
+// large enough that scanning the public broker for live rooms is futile.
 const CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
-export const CODE_LENGTH = 5;
+export const CODE_LENGTH = 6;
 
 export function generateRoomCode(): string {
   let code = '';
@@ -18,9 +20,13 @@ export function peerIdForRoom(code: string): string {
   return `chiriya-urri-${code.toUpperCase()}`;
 }
 
-/** Player tokens travel over the wire; keep them boring. */
+/** Player tokens travel over the wire and become object keys on the
+ *  host; keep them boring and never a prototype-chain name. */
+const RESERVED_TOKENS = new Set(['__proto__', 'constructor', 'prototype']);
+
 export function sanitizeToken(raw: string): string {
-  return raw.replace(/[^A-Za-z0-9_-]/g, '').slice(0, 40);
+  const cleaned = raw.replace(/[^A-Za-z0-9_-]/g, '').slice(0, 40);
+  return RESERVED_TOKENS.has(cleaned) ? '' : cleaned;
 }
 
 // ── Shared room state ──────────────────────────────────────────────

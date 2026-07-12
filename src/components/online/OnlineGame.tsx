@@ -138,7 +138,7 @@ const OnlineGame: React.FC<{ onExit: () => void }> = ({ onExit }) => {
           <input
             placeholder="Room code"
             value={code}
-            maxLength={5}
+            maxLength={6}
             onChange={(e) => setCode(e.target.value.toUpperCase())}
             aria-label="Room code"
           />
