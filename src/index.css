@@ -117,6 +117,9 @@ h1 {
   color: var(--accent);
   font-size: clamp(1.8rem, 5vw, 2.8rem);
   text-shadow: 0 2px 0 rgba(255, 255, 255, 0.5);
+  /* Above the sky layer — clouds and birds drift behind the title. */
+  position: relative;
+  z-index: 1;
 }
 
 /* ── Background sky: drifting clouds + the odd bird ───────────── */
@@ -195,7 +198,9 @@ h1 {
   position: relative;
   z-index: 1;
   width: min(560px, 100%);
-  background: rgba(253, 249, 243, 0.94);
+  /* Fully opaque: with any translucency the background clouds show
+     through and appear to drift across the game itself. */
+  background: var(--card);
   /* Square corners: crisp edges read grown-up; warmth comes from color
      and light instead. The soft, wide shadow lifts it off the page. */
   border-radius: 0;
