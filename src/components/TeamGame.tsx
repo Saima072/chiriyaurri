@@ -62,11 +62,9 @@ const TeamRun: React.FC<{
         <span>
           Round {round + 1}/{total}
         </span>
-        {!paused && (
-          <button className="pause-btn" onClick={pause}>
-            ⏸ Pause
-          </button>
-        )}
+        <button className="pause-btn" onClick={pause} style={{ visibility: paused ? 'hidden' : 'visible' }}>
+          ⏸ Pause
+        </button>
         <span>
           {names[0]} {scores[0]} · {names[1]} {scores[1]}
         </span>
@@ -74,9 +72,7 @@ const TeamRun: React.FC<{
       <div className={`turn-banner team-${turn}`}>
         📣 {names[turn]} — your call! Pass the device!
       </div>
-      {phase === 'playing' && (
-        <CountdownBar durationMs={durationMs} resetKey={round} paused={paused} />
-      )}
+      <CountdownBar durationMs={durationMs} resetKey={round} paused={phase !== 'playing' || paused} />
       {paused ? (
         <PauseCard>
           <button className="primary" onClick={resume}>

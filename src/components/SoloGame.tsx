@@ -44,16 +44,12 @@ const SoloRun: React.FC<{ rounds: number; onDone: () => void }> = ({ rounds, onD
         <span>
           Round {round + 1}/{total}
         </span>
-        {!paused && (
-          <button className="pause-btn" onClick={pause}>
-            ⏸ Pause
-          </button>
-        )}
+        <button className="pause-btn" onClick={pause} style={{ visibility: paused ? 'hidden' : 'visible' }}>
+          ⏸ Pause
+        </button>
         <span>Score: {totalPoints(outcomes)}</span>
       </div>
-      {phase === 'playing' && (
-        <CountdownBar durationMs={durationMs} resetKey={round} paused={paused} />
-      )}
+      <CountdownBar durationMs={durationMs} resetKey={round} paused={phase !== 'playing' || paused} />
       {paused ? (
         <PauseCard>
           <button className="primary" onClick={resume}>

@@ -307,20 +307,22 @@ const OnlineGame: React.FC<{ onExit: () => void }> = ({ onExit }) => {
         <span>
           Round {round.index + 1}/{round.total}
         </span>
-        {hostSession && !view.paused && (
-          <button className="pause-btn" onClick={() => hostSession.pause()}>
+        {hostSession && (
+          <button
+            className="pause-btn"
+            onClick={() => hostSession.pause()}
+            style={{ visibility: view.paused ? 'hidden' : 'visible' }}
+          >
             ⏸ Pause
           </button>
         )}
         <span>Room {lobby.code}</span>
       </div>
-      {view.phase === 'question' && (
-        <CountdownBar
-          durationMs={round.durationMs}
-          resetKey={round.index}
-          paused={view.answered || view.paused}
-        />
-      )}
+      <CountdownBar
+        durationMs={round.durationMs}
+        resetKey={round.index}
+        paused={view.phase !== 'question' || view.answered || view.paused}
+      />
       {view.paused ? (
         <PauseCard message={hostSession ? undefined : 'The host has paused the game.'}>
           {hostSession ? (
