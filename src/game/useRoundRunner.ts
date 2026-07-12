@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Action, RoundOutcome } from '../types';
-import { buildDeck, roundDuration, scoreRound, REVEAL_MS } from './engine';
+import { buildDeck, roundDuration, scoreRound, SPEEDS, type Speed } from './engine';
 
 export type RunnerPhase = 'playing' | 'reveal' | 'over';
 
@@ -10,7 +10,7 @@ export type RunnerPhase = 'playing' | 'reveal' | 'over';
  * then moves on until the deck runs out. Pausing freezes the clock
  * with its remaining time — it never grants a fresh timer.
  */
-export function useRoundRunner(totalRounds: number) {
+export function useRoundRunner(totalRounds: number, speed: Speed = 'classic') {
   const [deck] = useState(() => buildDeck(totalRounds));
   const total = deck.length;
   const [round, setRound] = useState(0);
@@ -21,12 +21,12 @@ export function useRoundRunner(totalRounds: number) {
   const remaining = useRef(0);
 
   const entry = deck[Math.min(round, total - 1)];
-  const durationMs = roundDuration(round, total);
+  const durationMs = roundDuration(round, total, speed);
 
   useEffect(() => {
     answered.current = false;
-    remaining.current = roundDuration(round, total);
-  }, [round, total]);
+    remaining.current = roundDuration(round, total, speed);
+  }, [round, total, speed]);
 
   const answer = useCallback(
     (action: Action | null) => {
@@ -61,9 +61,9 @@ export function useRoundRunner(totalRounds: number) {
         setRound((r) => r + 1);
         setPhase('playing');
       }
-    }, REVEAL_MS);
+    }, SPEEDS[speed].revealMs);
     return () => window.clearTimeout(t);
-  }, [phase, round, total, paused]);
+  }, [phase, round, total, paused, speed]);
 
   return {
     total,

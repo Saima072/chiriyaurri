@@ -5,10 +5,14 @@ import PauseCard from './PauseCard';
 import PromptCard from './PromptCard';
 import { useRoundRunner } from '../game/useRoundRunner';
 import { useBackgroundPause } from '../game/useBackgroundPause';
-import { bestStreak, totalPoints, ROUND_OPTIONS } from '../game/engine';
+import { bestStreak, totalPoints, ROUND_OPTIONS, type Speed } from '../game/engine';
 import { ads } from '../ads';
 
-const SoloRun: React.FC<{ rounds: number; onDone: () => void }> = ({ rounds, onDone }) => {
+const SoloRun: React.FC<{ rounds: number; speed: Speed; onDone: () => void }> = ({
+  rounds,
+  speed,
+  onDone,
+}) => {
   const {
     total,
     round,
@@ -21,7 +25,7 @@ const SoloRun: React.FC<{ rounds: number; onDone: () => void }> = ({ rounds, onD
     outcomes,
     lastOutcome,
     answer,
-  } = useRoundRunner(rounds);
+  } = useRoundRunner(rounds, speed);
   useBackgroundPause(phase === 'playing' && !paused, pause);
 
   // Interstitials (when enabled) belong strictly between games.
@@ -75,7 +79,10 @@ const SoloRun: React.FC<{ rounds: number; onDone: () => void }> = ({ rounds, onD
   );
 };
 
-const SoloGame: React.FC<{ onExit: () => void }> = ({ onExit }) => {
+const SoloGame: React.FC<{ onExit: () => void; speed?: Speed }> = ({
+  onExit,
+  speed = 'classic',
+}) => {
   const [rounds, setRounds] = useState<number>(ROUND_OPTIONS[1]);
   const [runId, setRunId] = useState(0); // bump to deal a fresh deck
   const [started, setStarted] = useState(false);
@@ -83,8 +90,12 @@ const SoloGame: React.FC<{ onExit: () => void }> = ({ onExit }) => {
   if (!started) {
     return (
       <div className="panel">
-        <h2>Solo Game</h2>
-        <p>The caller speeds up every round. Timeout counts as staying still!</p>
+        <h2>{speed === 'fast' ? '⚡ Fast Game' : 'Solo Game'}</h2>
+        <p>
+          {speed === 'fast'
+            ? 'Rapid fire — the caller starts fast and only gets faster. Reflexes only!'
+            : 'The caller speeds up every round. Timeout counts as staying still!'}
+        </p>
         <div className="option-row">
           {ROUND_OPTIONS.map((n) => (
             <button
@@ -110,6 +121,7 @@ const SoloGame: React.FC<{ onExit: () => void }> = ({ onExit }) => {
     <SoloRun
       key={runId}
       rounds={rounds}
+      speed={speed}
       onDone={() => {
         setRunId((n) => n + 1);
         setStarted(false);

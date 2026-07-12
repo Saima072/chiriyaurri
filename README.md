@@ -24,7 +24,8 @@ one floats).
   one only if the thing actually flew. Every mode can be paused (the clock
   freezes with its remaining time) and quit; online, the host holds the
   pause and can end the game early with current scores as final.
-- **Teams (pass and play)** — two teams share one device and alternate calls.
+- **Fast mode ⚡** — the same solo rules at rapid-fire pace: the caller
+  starts at 2.6 seconds a call and drops to 1.1 — reflexes only.
 - **Play Online 🌍** — one player hosts a room and gets a 5-letter code;
   friends anywhere on the internet join with it. Free-for-all or two teams,
   synced rounds, live scoreboard. The host's browser is the authoritative

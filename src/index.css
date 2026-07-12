@@ -332,17 +332,12 @@ input:focus {
 }
 
 .option-row,
-.join-row,
-.name-inputs {
+.join-row {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
   justify-content: center;
   align-items: center;
-}
-
-.name-inputs input {
-  width: 170px;
 }
 
 .join-row input {
@@ -369,30 +364,6 @@ input:focus {
   overflow: hidden;
   text-overflow: ellipsis;
   min-width: 0;
-}
-
-.turn-banner {
-  width: 100%;
-  padding: 8px;
-  border-radius: 0;
-  font-weight: 600;
-  color: white;
-}
-
-.turn-banner.team-0 {
-  background: var(--team-a);
-}
-
-.turn-banner.team-1 {
-  background: var(--team-b);
-}
-
-.team-0-text {
-  color: var(--team-a);
-}
-
-.team-1-text {
-  color: var(--team-b);
 }
 
 .countdown {

@@ -51,8 +51,9 @@ Every design decision below traces back to one of these.
 - `useRoundRunner` — a hook that owns the question→reveal→next loop with
   timeouts. A ref guards against double-answering (also protects against
   React StrictMode double-invoking updaters).
-- **Teams on one device**: round *i* belongs to team *i mod 2* — exactly how
-  turns pass around a circle. No extra state machine needed.
+- **Fast mode**: the same runner with a `speed` profile — the caller opens
+  at 2.6s a call and tightens to 1.1s, with snappier reveals. (An earlier
+  pass-and-play team mode was cut in favor of it; online teams remain.)
 
 ## Online multiplayer (`src/multiplayer/`)
 
