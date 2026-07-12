@@ -18,6 +18,7 @@ import {
 } from '../../multiplayer/history';
 import { blankSnapshot, clearHostState, loadHostState } from '../../multiplayer/hostState';
 import { scoreRound, ROUND_OPTIONS } from '../../game/engine';
+import { ads } from '../../ads';
 import type { Action } from '../../types';
 
 type Session = HostSession | ClientSession;
@@ -88,6 +89,11 @@ const OnlineGame: React.FC<{ onExit: () => void }> = ({ onExit }) => {
       setRoomActive(view.lobby.code, false);
     }
   }, [view?.phase, view?.lobby?.code]);
+
+  // Interstitials (when enabled) belong strictly between games.
+  useEffect(() => {
+    if (view?.phase === 'over') ads.gameFinished();
+  }, [view?.phase]);
 
   const leave = () => {
     if (view?.lobby?.code) setRoomActive(view.lobby.code, false);

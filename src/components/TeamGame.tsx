@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import CountdownBar from './CountdownBar';
 import FlyStayButtons from './FlyStayButtons';
 import PauseCard from './PauseCard';
@@ -6,6 +6,7 @@ import PromptCard from './PromptCard';
 import { useRoundRunner } from '../game/useRoundRunner';
 import { useBackgroundPause } from '../game/useBackgroundPause';
 import { ROUND_OPTIONS } from '../game/engine';
+import { ads } from '../ads';
 import type { RoundOutcome } from '../types';
 
 // Round i belongs to team i % 2 — the device is passed around the circle.
@@ -39,6 +40,11 @@ const TeamRun: React.FC<{
   } = useRoundRunner(rounds);
   useBackgroundPause(phase === 'playing' && !paused, pause);
   const scores = teamScores(outcomes);
+
+  // Interstitials (when enabled) belong strictly between games.
+  useEffect(() => {
+    if (phase === 'over') ads.gameFinished();
+  }, [phase]);
 
   if (phase === 'over') {
     const winner =
